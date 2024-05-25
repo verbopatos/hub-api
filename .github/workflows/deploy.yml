@@ -28,6 +28,7 @@ jobs:
       - name: Build, tag, and push Docker image
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
           REPOSITORY_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/YOUR_ECR_REPOSITORY
           docker build -t $REPOSITORY_URI:latest .
