@@ -19,10 +19,14 @@ jobs:
       - name: Log in to Amazon ECR
         id: ecr-login
         uses: aws-actions/amazon-ecr-login@v1
+        with:
+          region: us-east-1
 
       - name: Build, tag, and push Docker image
+        env:
+          AWS_REGION: us-east-1
         run: |
-          REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/YOUR_ECR_REPOSITORY
+          REPOSITORY_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/YOUR_ECR_REPOSITORY
           docker build -t $REPOSITORY_URI:latest .
           docker push $REPOSITORY_URI:latest
 
