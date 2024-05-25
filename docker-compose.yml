@@ -1,0 +1,40 @@
+# docker-compose.yml
+
+version: "3.9"
+
+services:
+  hub-db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: hub
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ./db/postgres-data:/var/lib/postgresql/data
+      - ./db/scripts/hub.ddl.sql:/docker-entrypoint-initdb.d/01_hub-ddl.sql
+      - ./db/scripts/hub.dml.sql:/docker-entrypoint-initdb.d/02_hub-dml.sql
+    networks:
+      - hub-net
+
+  hub-api:
+    build: .  # Specifies the directory where the Dockerfile and application code are located
+    environment:
+      DB_USER: postgres
+      DB_HOST: hub-db
+      DB_NAME: hub
+      DB_PASSWORD: password
+      DB_PORT: 5432
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - hub-db
+    networks:
+      - hub-net
+
+networks:
+  hub-net:
+    name: hub-net
