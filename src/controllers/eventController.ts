@@ -1,3 +1,4 @@
+// eventController.ts
 import { Request, Response } from 'express';
 import pool from '../database';
 import { Event } from '../models/event';

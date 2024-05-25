@@ -1,3 +1,4 @@
+// event.ts
 export interface Event {
     id?: number;
     eventTypeId: number;
