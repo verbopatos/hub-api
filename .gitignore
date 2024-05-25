@@ -131,3 +131,4 @@ dist
 
 # project files
 dir-struct.md
+postgres-data/
