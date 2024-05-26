@@ -38,6 +38,91 @@ jobs:
       - name: Debug DNS resolution
         run: |
           DOMAIN=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          DOMAIN=name: Deploy to Elastic Beanstalk
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Configure AWS CLI
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set default.region $AWS_REGION
+
+      - name: Verify AWS CLI Configuration
+        run: |
+          aws sts get-caller-identity
+          aws ecr describe-repositories --region ${{ secrets.AWS_REGION }}
+
+      - name: Get ECR login password
+        id: ecr-login
+        run: echo "ECR_PASSWORD=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }})" >> $GITHUB_ENV
+
+      - name: Debug DNS resolution
+        run: |
+          DOMAIN=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          DOMAIN=837863412467.dkr.ecr.us-east-1.amazonaws.com/hub-api
+          echo "Resolving domain: $DOMAIN"
+          nslookup $DOMAIN
+
+      - name: Log in to Amazon ECR
+        env:
+          ECR_PASSWORD: ${{ env.ECR_PASSWORD }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          DOMAIN=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          DOMAIN=837863412467.dkr.ecr.us-east-1.amazonaws.com/hub-api
+          echo "Attempting to login to ECR at $DOMAIN"
+          echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $DOMAIN
+
+      - name: Build, tag, and push Docker image
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        run: |
+          REPOSITORY_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hub-api
+          echo "Building Docker image and tagging with URI: $REPOSITORY_URI"
+          docker build -t $REPOSITORY_URI:latest .
+          echo "Pushing Docker image to ECR repository: $REPOSITORY_URI"
+          docker push $REPOSITORY_URI:latest
+
+      - name: Deploy to Elastic Beanstalk
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          HOST: ${{ secrets.HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          PORT: ${{ secrets.PORT }}
+        run: |
+          pip install awsebcli
+          eb init -p docker hub-api --region $AWS_REGION
+          eb use hub-api-env
+          eb setenv AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY DB_USER=$DB_USER DB_HOST=$DB_HOST DB_NAME=$DB_NAME DB_PASSWORD=$DB_PASSWORD DB_PORT=$DB_PORT PORT=$PORT HOST=$HOST
+          eb deploy
+
           echo "Resolving domain: $DOMAIN"
           nslookup $DOMAIN
 
