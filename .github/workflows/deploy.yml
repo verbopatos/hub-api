@@ -77,7 +77,6 @@ jobs:
 
       - name: Debug DNS resolution
         run: |
-          DOMAIN=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
           DOMAIN=837863412467.dkr.ecr.us-east-1.amazonaws.com/hub-api
           echo "Resolving domain: $DOMAIN"
           nslookup $DOMAIN
@@ -88,7 +87,6 @@ jobs:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          DOMAIN=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
           DOMAIN=837863412467.dkr.ecr.us-east-1.amazonaws.com/hub-api
           echo "Attempting to login to ECR at $DOMAIN"
           echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $DOMAIN
