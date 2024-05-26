@@ -5,6 +5,8 @@ on:
     branches-ignore:
       - main
   delete:
+    branches:
+      - '**'
 
 jobs:
   deploy:
@@ -51,6 +53,27 @@ jobs:
           docker build -t $REPOSITORY_URI:$TAG .
           docker push $REPOSITORY_URI:$TAG
 
+      - name: List Existing Elastic Beanstalk Environments
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          pip install awsebcli
+          eb list
+
+      - name: Check if Environment Exists
+        env:
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          TAG=$(echo ${{ github.ref }} | sed 's/refs\/heads\///' | sed 's/\//-/g' | sed 's/[^a-zA-Z0-9-]//g' | sed 's/^-//;s/-$//' | tr '[:upper:]' '[:lower:]')
+          SUBDOMAIN=$(echo $TAG | sed 's/^-//;s/-$//')
+          echo "Checking if environment $SUBDOMAIN-env exists"
+          if eb status $SUBDOMAIN-env; then
+            echo "Environment $SUBDOMAIN-env exists. Terminating..."
+            eb terminate $SUBDOMAIN-env --force
+          else
+            echo "Environment $SUBDOMAIN-env does not exist."
+          fi
+
       - name: Deploy to Elastic Beanstalk
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -69,8 +92,6 @@ jobs:
           echo "Deploying to subdomain: $SUBDOMAIN.verbohub.com.br with tag: $TAG"
           pip install awsebcli
           eb init -p docker hub-api --region $AWS_REGION
-          # Attempt to delete the environment if it already exists
-          eb terminate $SUBDOMAIN-env --force || true
           eb create $SUBDOMAIN-env --cname $SUBDOMAIN
           eb use $SUBDOMAIN-env
           eb setenv AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY DB_USER=$DB_USER DB_HOST=$DB_HOST DB_NAME=$DB_NAME DB_PASSWORD=$DB_PASSWORD DB_PORT=$DB_PORT PORT=$PORT HOST=$HOST
