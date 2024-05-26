@@ -118,6 +118,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          TAG=$(echo ${{ github.ref }} | sed 's/refs\/heads\///' | sed 's/\//-/g' | sed 's/[^a-zA-Z0-9-]//g' | sed 's/^-//;s/-$//')
-          echo "Terminating environment: $TAG-env"
-          eb terminate $TAG-env --force
+          TAG=$(echo ${{ github.ref }} | sed 's/refs\/heads\///' | sed 's/\//-/g' | sed 's/[^a-zA-Z0-9-]//g' | sed 's/^-//;s/-$//' | tr '[:upper:]' '[:lower:]')
+          echo "Termina
