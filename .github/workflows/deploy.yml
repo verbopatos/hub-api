@@ -28,15 +28,9 @@ jobs:
           aws sts get-caller-identity
           aws ecr describe-repositories --region ${{ secrets.AWS_REGION }}
 
-      - name: Sleep to allow DNS to propagate
-        run: sleep 30
-
       - name: Log in to Amazon ECR
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          ECR_PASSWORD=$(aws ecr get-login-password --region $AWS_REGION)
-          echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
 
       - name: Build, tag, and push Docker image
         env:
