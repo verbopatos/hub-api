@@ -36,12 +36,20 @@ jobs:
         run: echo "ECR_PASSWORD=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }})" >> $GITHUB_ENV
 
       - name: Debug DNS resolution
-        run: nslookup ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+        run: |
+          DOMAIN=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          echo "Resolving domain: $DOMAIN"
+          nslookup $DOMAIN
 
       - name: Log in to Amazon ECR
+        env:
+          ECR_PASSWORD: ${{ env.ECR_PASSWORD }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          echo "Attempting to login to ECR at ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com"
-          docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com <<< ${{ env.ECR_PASSWORD }}
+          DOMAIN=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          echo "Attempting to login to ECR at $DOMAIN"
+          echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $DOMAIN
 
       - name: Build, tag, and push Docker image
         env:
@@ -49,7 +57,9 @@ jobs:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
           REPOSITORY_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hub-api
+          echo "Building Docker image and tagging with URI: $REPOSITORY_URI"
           docker build -t $REPOSITORY_URI:latest .
+          echo "Pushing Docker image to ECR repository: $REPOSITORY_URI"
           docker push $REPOSITORY_URI:latest
 
       - name: Deploy to Elastic Beanstalk
