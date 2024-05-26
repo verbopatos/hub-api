@@ -1,4 +1,3 @@
-// index.ts
 import express from 'express';
 import dotenv from 'dotenv';
 import eventRoutes from './routes/eventRoutes';
@@ -16,6 +15,11 @@ app.use('/api', eventTypeRoutes);
 
 // Setup Swagger
 setupSwagger(app);
+
+// Health Check Endpoint
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
