@@ -1,9 +1,8 @@
-# deploy.yml
 name: Deploy to Elastic Beanstalk
 
 on:
   workflow_run:
-    workflows: ["Run Unit Tests"]
+    workflows: ["Unit Tests"] # Ensure this matches the name of your test workflow
     types:
       - completed
 
@@ -15,12 +14,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Load .env variables
-        run: |
-          cat <<EOF >> $GITHUB_ENV
-          $(cat .env)
-          EOF
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -48,13 +41,13 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          HOST: ${{ env.HOST }}
-          DB_USER: ${{ env.DB_USER }}
-          DB_HOST: ${{ env.DB_HOST }}
-          DB_NAME: ${{ env.DB_NAME }}
-          DB_PASSWORD: ${{ env.DB_PASSWORD }}
-          DB_PORT: ${{ env.DB_PORT }}
-          PORT: ${{ env.PORT }}
+          HOST: ${{ secrets.HOST }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          PORT: ${{ secrets.PORT }}
         run: |
           pip install awsebcli
           eb init -p docker hub-api --region $AWS_REGION
