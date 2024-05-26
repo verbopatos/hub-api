@@ -1,19 +1,23 @@
 name: Deploy to Elastic Beanstalk
 
 on:
-  workflow_run:
-    workflows: ["Unit Tests"] # Ensure this matches the name of your test workflow
-    types:
-      - completed
+  push:
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }} # Run only if the previous workflow succeeded
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Load .env variables
+        run: |
+          cat <<EOF >> $GITHUB_ENV
+          $(cat .env)
+          EOF
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
