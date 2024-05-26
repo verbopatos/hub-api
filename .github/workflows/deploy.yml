@@ -39,13 +39,17 @@ jobs:
           ECR_PASSWORD=$(aws ecr get-login-password --region $AWS_REGION)
           echo "ECR_PASSWORD=$ECR_PASSWORD" >> $GITHUB_ENV
 
+      - name: Debug DNS resolution
+        run: |
+          nslookup ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+
       - name: Log in to Amazon ECR
         env:
           ECR_PASSWORD: ${{ env.ECR_PASSWORD }}
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
-          echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          for i in {1..5}; do echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com && break || sleep 5; done
 
       - name: Build, tag, and push Docker image
         env:
