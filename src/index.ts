@@ -1,5 +1,6 @@
 // index.ts
 import express from 'express';
+import cors from 'cors';
 import dotenv from 'dotenv';
 import eventRoutes from './routes/eventRoutes';
 import eventTypeRoutes from './routes/eventTypeRoutes';
@@ -9,6 +10,9 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+
+// Enable CORS for all routes
+app.use(cors());
 
 app.use(express.json());
 
