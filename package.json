@@ -2,10 +2,10 @@
   "name": "hub-api",
   "version": "1.0.0",
   "description": "API REST para o aplicativo Verbo Hub",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "ts-node-dev src/index.ts",
+    "start": "node dist/index.js",
     "build": "tsc",
     "dev": "nodemon src/index.ts"
   },

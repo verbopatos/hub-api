@@ -1,3 +1,4 @@
+// index.ts
 import express from 'express';
 import dotenv from 'dotenv';
 import eventRoutes from './routes/eventRoutes';
@@ -7,7 +8,7 @@ import setupSwagger from './swagger';
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 app.use(express.json());
 
