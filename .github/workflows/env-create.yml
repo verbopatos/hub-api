@@ -69,6 +69,8 @@ jobs:
           echo "Deploying to subdomain: $SUBDOMAIN.verbohub.com.br with tag: $TAG"
           pip install awsebcli
           eb init -p docker hub-api --region $AWS_REGION
+          # Attempt to delete the environment if it already exists
+          eb terminate $SUBDOMAIN-env --force || true
           eb create $SUBDOMAIN-env --cname $SUBDOMAIN
           eb use $SUBDOMAIN-env
           eb setenv AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY DB_USER=$DB_USER DB_HOST=$DB_HOST DB_NAME=$DB_NAME DB_PASSWORD=$DB_PASSWORD DB_PORT=$DB_PORT PORT=$PORT HOST=$HOST
