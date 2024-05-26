@@ -26,7 +26,7 @@ jobs:
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set default.region $AWS_REGION
 
-      - name: Debug: Verify AWS CLI Configuration
+      - name: Verify AWS CLI Configuration
         run: |
           aws sts get-caller-identity
           aws ecr describe-repositories --region ${{ secrets.AWS_REGION }}
