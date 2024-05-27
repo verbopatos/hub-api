@@ -36,6 +36,7 @@ jobs:
               -X POST \
               -d '{"labels":["api","bug"]}' \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
+          fi
 
   test-branching:
     runs-on: ubuntu-latest
