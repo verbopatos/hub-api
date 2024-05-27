@@ -1,18 +1,16 @@
 name: Branch Labeler
 
 on:
-  create:
-
-  push:
-    paths:
-      - '**/test.ts'
-      - '.github/**'
-      - '.eb*'
   pull_request:
     types:
       - opened
       - reopened
       - synchronize
+  push:
+    paths:
+      - '**/*.test.ts'
+      - '.github/**'
+      - '.eb*'
 
 jobs:
   label-pull-request:
@@ -21,7 +19,7 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v2
 
-      - name: Label pull requests
+      - name: Label pull requests based on branch
         run: |
           PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
           BRANCH_NAME=$(jq --raw-output .pull_request.head.ref "$GITHUB_EVENT_PATH")
@@ -48,9 +46,9 @@ jobs:
 
       - name: Label test file changes
         run: |
+          PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
           for file in $(git diff --name-only ${{ github.event.before }} ${{ github.sha }}); do
-            if [[ "$file" == *"test.ts"* ]]; then
-              PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
+            if [[ "$file" == *.test.ts ]]; then
               curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                 -H "Content-Type: application/json" \
                 -X POST \
@@ -67,9 +65,9 @@ jobs:
 
       - name: Label devops file changes
         run: |
+          PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
           for file in $(git diff --name-only ${{ github.event.before }} ${{ github.sha }}); do
             if [[ "$file" == .github/* || "$file" == .eb* ]]; then
-              PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
               curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                 -H "Content-Type: application/json" \
                 -X POST \
