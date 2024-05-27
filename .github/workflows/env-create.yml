@@ -87,4 +87,4 @@ jobs:
           fi
 
           eb init -p docker $EB_APP_NAME --region $AWS_REGION
-          eb create $EB_ENV_NAME --cname $BRANCH_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS
+          eb create $EB_ENV_NAME --cname $BRANCH_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SE
