@@ -1,4 +1,4 @@
-// eventController.test.ts
+// eventController.test.ts - This file contains tests for the event controller functions.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Request, Response } from 'express';
 import { createEvent, getEventById, getEvents, updateEvent, deleteEvent } from '../src/controllers/eventController';
