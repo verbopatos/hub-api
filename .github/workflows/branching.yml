@@ -19,7 +19,7 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v2
         with:
-          fetch-depth: 2  # Ensure enough history is fetched
+          fetch-depth: 2
 
       - name: PR Branching
         env:
@@ -33,13 +33,13 @@ jobs:
               -H "Content-Type: application/json" \
               -X POST \
               -d '{"labels":["api","enhancement"]}' \
-              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
           elif [[ "$BRANCH_NAME" == hotfix/* ]]; then
             curl -s -H "Authorization: token $GITHUB_TOKEN" \
               -H "Content-Type: application/json" \
               -X POST \
               -d '{"labels":["api","bug"]}' \
-              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
           fi
 
   test-branching:
@@ -50,7 +50,7 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v2
         with:
-          fetch-depth: 2  # Ensure enough history is fetched
+          fetch-depth: 2
 
       - name: Test Branching
         env:
@@ -70,7 +70,7 @@ jobs:
               -H "Content-Type: application/json" \
               -X POST \
               -d '{"labels":["api","unit-test"]}' \
-              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
           fi
 
   devops-branching:
@@ -81,7 +81,7 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v2
         with:
-          fetch-depth: 2  # Ensure enough history is fetched
+          fetch-depth: 2
 
       - name: DevOps Branching
         env:
@@ -101,7 +101,7 @@ jobs:
               -H "Content-Type: application/json" \
               -X POST \
               -d '{"labels":["devops"]}' \
-              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
 
             # Get current labels
             CURRENT_LABELS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
@@ -114,7 +114,7 @@ jobs:
               curl -s -H "Authorization: token $GITHUB_TOKEN" \
                 -H "Content-Type: application/json" \
                 -X PATCH \
-                -d "{\"labels\":[\"$UPDATED_LABELS\"]}" \
+                -d "{\"labels\":[\"$(echo $UPDATED_LABELS | sed 's/,/\",\"/g')\"]}" \
                 "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
             fi
           fi
