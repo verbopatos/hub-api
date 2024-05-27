@@ -14,7 +14,7 @@ jobs:
       - name: Check out the repository
         uses: actions/checkout@v2
         with:
-          fetch-depth: 2
+          fetch-depth: 0  # Fetch all history so that git diff works
 
       - name: PR Branching
         env:
@@ -42,7 +42,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_OWNER }}
         run: |
           PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
-          FILES=$(git diff --name-only origin/main...HEAD)
+          FILES=$(git diff --name-only origin/main HEAD)
           TEST_FILE_CHANGED=false
           INTEGRATION_TEST_FILE_CHANGED=false
 
@@ -62,7 +62,6 @@ jobs:
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
           else
             curl -s -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Content-Type: application/json" \
               -X DELETE \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels/unit-tests"
           fi
@@ -75,7 +74,6 @@ jobs:
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
           else
             curl -s -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Content-Type: application/json" \
               -X DELETE \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels/integration-tests"
           fi
@@ -85,7 +83,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_OWNER }}
         run: |
           PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
-          FILES=$(git diff --name-only origin/main...HEAD)
+          FILES=$(git diff --name-only origin/main HEAD)
           DEVOPS_FILE_CHANGED=false
 
           for file in $FILES; do
@@ -96,7 +94,6 @@ jobs:
           done
 
           if [ "$DEVOPS_FILE_CHANGED" = true ]; then
-            # Add devops label
             curl -s -H "Authorization: token $GITHUB_TOKEN" \
               -H "Content-Type: application/json" \
               -X POST \
@@ -118,9 +115,7 @@ jobs:
                 "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
             fi
           else
-            # Remove devops label if no devops files are present
             curl -s -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Content-Type: application/json" \
               -X DELETE \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels/devops"
           fi
