@@ -4,7 +4,7 @@ import express from 'express';
 import eventTypeRoutes from '../../src/routes/eventTypeRoutes';
 import pool from '../../src/database';
 
-vi.mock('../src/database', () => {
+vi.mock('../../src/database', () => {
   return {
     default: {
       query: vi.fn(),

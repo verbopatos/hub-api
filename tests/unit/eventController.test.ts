@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import { createEvent, getEventById, getEvents, updateEvent, deleteEvent } from '../../src/controllers/eventController';
 import pool from '../../src/database';
 
-vi.mock('../src/database', () => {
+vi.mock('../../src/database', () => {
   return {
     default: {
       query: vi.fn(),

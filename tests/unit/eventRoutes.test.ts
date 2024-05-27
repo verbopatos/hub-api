@@ -6,7 +6,7 @@ import eventRoutes from '../../src/routes/eventRoutes';
 import pool from '../../src/database';
 import { createEvent, getEventById, getEvents, updateEvent, deleteEvent } from '../../src/controllers/eventController';
 
-vi.mock('../src/database', () => {
+vi.mock('../../src/database', () => {
   return {
     default: {
       query: vi.fn(),
