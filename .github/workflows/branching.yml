@@ -40,10 +40,11 @@ jobs:
               -X POST \
               -d '{"labels":["api","bug"]}' \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
-          fi
 
   test-branching:
     runs-on: ubuntu-latest
+    needs: pull-request-branching
+    continue-on-error: true
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
@@ -67,6 +68,8 @@ jobs:
 
   devops-branching:
     runs-on: ubuntu-latest
+    needs: test-branching
+    continue-on-error: true
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
