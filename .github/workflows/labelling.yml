@@ -1,4 +1,4 @@
-name: Branch Labeler
+name: Branching
 
 on:
   pull_request:
@@ -13,13 +13,13 @@ on:
       - '.eb*'
 
 jobs:
-  label-pull-request:
+  pull-request-branching:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
 
-      - name: Label pull requests based on branch
+      - name: PR Branching
         run: |
           PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
           BRANCH_NAME=$(jq --raw-output .pull_request.head.ref "$GITHUB_EVENT_PATH")
@@ -36,18 +36,17 @@ jobs:
               -X POST \
               -d '{"labels":["api","bug"]}' \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
-          fi
 
-  label-test-files:
+  test-branching:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
 
-      - name: Label test file changes
+      - name: Test Branching
         run: |
           PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
-          for file in $(git diff --name-only ${{ github.event.before }} ${{ github.sha }}); do
+          for file in $(git diff --name-only HEAD~1 HEAD); do
             if [[ "$file" == *.test.ts ]]; then
               curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                 -H "Content-Type: application/json" \
@@ -57,16 +56,16 @@ jobs:
             fi
           done
 
-  label-devops-files:
+  devops-branching:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
 
-      - name: Label devops file changes
+      - name: DevOps Branching
         run: |
           PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
-          for file in $(git diff --name-only ${{ github.event.before }} ${{ github.sha }}); do
+          for file in $(git diff --name-only HEAD~1 HEAD); do
             if [[ "$file" == .github/* || "$file" == .eb* ]]; then
               curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                 -H "Content-Type: application/json" \
