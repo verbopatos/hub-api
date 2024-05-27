@@ -74,14 +74,17 @@ jobs:
           BRANCH_NAME=${BRANCH_NAME//\//-} # Replace slashes with hyphens
           EB_ENV_NAME=hub-api-${BRANCH_NAME}
           EB_APP_NAME=hub-api
-          
+
           # Check if the environment exists and terminate if it does
           if eb list | grep -q $EB_ENV_NAME; then
             echo "Environment $EB_ENV_NAME exists. Terminating..."
             eb terminate $EB_ENV_NAME --force
-            sleep 60 # Wait for termination to complete
+            # Wait for termination to complete
+            while eb list | grep -q $EB_ENV_NAME; do
+              echo "Waiting for environment $EB_ENV_NAME to terminate..."
+              sleep 30
+            done
           fi
 
           eb init -p docker $EB_APP_NAME --region $AWS_REGION
-          eb create $EB_ENV_NAME --cname $BRANCH_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST
-          eb deploy $EB_ENV_NAME
+          eb create $EB_ENV_NAME --cname $BRANCH_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS
