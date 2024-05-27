@@ -2,9 +2,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
-import eventRoutes from '../src/routes/eventRoutes';
-import pool from '../src/database';
-import { createEvent, getEventById, getEvents, updateEvent, deleteEvent } from '../src/controllers/eventController';
+import eventRoutes from '../../src/routes/eventRoutes';
+import pool from '../../src/database';
+import { createEvent, getEventById, getEvents, updateEvent, deleteEvent } from '../../src/controllers/eventController';
 
 vi.mock('../src/database', () => {
   return {

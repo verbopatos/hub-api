@@ -1,8 +1,8 @@
 // eventController.test.ts - This file contains tests for the event controller functions.
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Request, Response } from 'express';
-import { createEvent, getEventById, getEvents, updateEvent, deleteEvent } from '../src/controllers/eventController';
-import pool from '../src/database';
+import { createEvent, getEventById, getEvents, updateEvent, deleteEvent } from '../../src/controllers/eventController';
+import pool from '../../src/database';
 
 vi.mock('../src/database', () => {
   return {
