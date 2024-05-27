@@ -84,7 +84,11 @@ jobs:
               echo "Waiting for environment $EB_ENV_NAME to terminate..."
               sleep 30
             done
+          else
+            echo "Environment $EB_ENV_NAME does not exist. Continuing with creation."
           fi
 
+          # Initialize and create the new environment without specifying a CNAME
           eb init -p docker $EB_APP_NAME --region $AWS_REGION
-          eb create $EB_ENV_NAME --cname $BRANCH_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SE
+          eb create $EB_ENV_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST
+          eb deploy $EB_ENV_NAME
