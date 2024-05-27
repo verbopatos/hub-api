@@ -1,14 +1,12 @@
-name: QA Deployments
+name: Deploy test environment to Elastic Beanstalk
 
 on:
   push:
     branches-ignore:
       - main
-  delete:
 
 jobs:
   deploy:
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
     steps:
@@ -27,6 +25,11 @@ jobs:
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set default.region $AWS_REGION
+
+      - name: Verify AWS CLI Configuration
+        run: |
+          aws sts get-caller-identity
+          aws ecr describe-repositories --region ${{ secrets.AWS_REGION }}
 
       - name: Get ECR login password
         id: ecr-login
@@ -47,26 +50,11 @@ jobs:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
           REPOSITORY_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hub-api
-          TAG=$(echo ${{ github.ref }} | sed 's/refs\/heads\///' | sed 's/\//-/g')
-          docker build -t $REPOSITORY_URI:$TAG .
-          docker push $REPOSITORY_URI:$TAG
-
-      - name: Install and initialize EB CLI
-        run: |
-          pip install awsebcli
-          eb init -p docker hub-api --region $AWS_REGION
-
-      - name: Check if Environment Exists
-        run: |
-          TAG=$(echo ${{ github.ref }} | sed 's/refs\/heads\///' | sed 's/\//-/g' | sed 's/[^a-zA-Z0-9-]//g' | sed 's/^-//;s/-$//' | tr '[:upper:]' '[:lower:]')
-          SUBDOMAIN=$(echo $TAG | sed 's/^-//;s/-$//')
-          echo "Checking if environment $SUBDOMAIN-env exists"
-          if eb status $SUBDOMAIN-env; then
-            echo "Environment $SUBDOMAIN-env exists. Terminating..."
-            eb terminate $SUBDOMAIN-env --force
-          else
-            echo "Environment $SUBDOMAIN-env does not exist."
-          fi
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          BRANCH_NAME=${BRANCH_NAME//\//-} # Replace slashes with hyphens
+          IMAGE_TAG=${BRANCH_NAME}-latest
+          docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+          docker push $REPOSITORY_URI:$IMAGE_TAG
 
       - name: Deploy to Elastic Beanstalk
         env:
@@ -81,36 +69,11 @@ jobs:
           DB_PORT: ${{ secrets.DB_PORT }}
           PORT: ${{ secrets.PORT }}
         run: |
-          TAG=$(echo ${{ github.ref }} | sed 's/refs\/heads\///' | sed 's/\//-/g' | sed 's/[^a-zA-Z0-9-]//g' | sed 's/^-//;s/-$//' | tr '[:upper:]' '[:lower:]')
-          SUBDOMAIN=$(echo $TAG | sed 's/^-//;s/-$//')
-          echo "Deploying to subdomain: $SUBDOMAIN.verbohub.com.br with tag: $TAG"
-          eb init -p docker hub-api --region $AWS_REGION
-          eb create $SUBDOMAIN-env --cname $SUBDOMAIN
-          eb use $SUBDOMAIN-env
-          eb setenv AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY DB_USER=$DB_USER DB_HOST=$DB_HOST DB_NAME=$DB_NAME DB_PASSWORD=$DB_PASSWORD DB_PORT=$DB_PORT PORT=$PORT HOST=$HOST
-          eb deploy
-
-  cleanup:
-    if: github.event_name == 'delete'
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Configure AWS CLI
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set default.region $AWS_REGION
-
-      - name: Delete Elastic Beanstalk Environment
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          TAG=$(echo ${{ github.ref }} | sed 's/refs\/heads\///' | sed 's/\//-/g' | sed 's/[^a-zA-Z0-9-]//g' | sed 's/^-//;s/-$//' | tr '[:upper:]' '[:lower:]')
-          echo "Terminating environment: $TAG-env"
-          eb terminate $TAG-env --force
+          pip install awsebcli
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          BRANCH_NAME=${BRANCH_NAME//\//-} # Replace slashes with hyphens
+          EB_ENV_NAME=hub-api-${BRANCH_NAME}
+          EB_APP_NAME=hub-api
+          eb init -p docker $EB_APP_NAME --region $AWS_REGION
+          eb create $EB_ENV_NAME --cname $BRANCH_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST
+          eb deploy $EB_ENV_NAME
