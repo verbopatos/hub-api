@@ -8,7 +8,7 @@ on:
       - synchronize
 
 jobs:
-  pull-request-branching:
+  labeling:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
@@ -35,17 +35,6 @@ jobs:
               -X POST \
               -d '{"labels":["api","bug"]}' \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
-          fi
-
-  test-branching:
-    runs-on: ubuntu-latest
-    needs: pull-request-branching
-    continue-on-error: true
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
 
       - name: Test Branching
         env:
@@ -66,17 +55,6 @@ jobs:
               -X POST \
               -d '{"labels":["api","unit-test"]}' \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
-          fi
-
-  devops-branching:
-    runs-on: ubuntu-latest
-    needs: test-branching
-    continue-on-error: true
-    steps:
-      - name: Check out the repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 2
 
       - name: DevOps Branching
         env:
