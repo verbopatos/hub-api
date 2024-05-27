@@ -6,11 +6,6 @@ on:
       - opened
       - reopened
       - synchronize
-  push:
-    paths:
-      - '**/*.test.ts'
-      - '.github/**'
-      - '.eb*'
 
 jobs:
   pull-request-branching:
