@@ -1,0 +1,121 @@
+name: Branch
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+jobs:
+  labeling:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Fetch all history so that git diff works
+
+      - name: PR Branching
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_OWNER }}
+        run: |
+          PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
+          BRANCH_NAME=$(jq --raw-output .pull_request.head.ref "$GITHUB_EVENT_PATH")
+
+          if [[ "$BRANCH_NAME" == feature/* ]]; then
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -X POST \
+              -d '{"labels":["api","enhancement"]}' \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
+          elif [[ "$BRANCH_NAME" == hotfix/* ]]; then
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -X POST \
+              -d '{"labels":["api","bug"]}' \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
+          fi
+
+      - name: Test Branching
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_OWNER }}
+        run: |
+          PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
+          FILES=$(git diff --name-only origin/main HEAD)
+          TEST_FILE_CHANGED=false
+          INTEGRATION_TEST_FILE_CHANGED=false
+
+          for file in $FILES; do
+            if [[ "$file" == *.test.ts ]]; then
+              TEST_FILE_CHANGED=true
+            elif [[ "$file" == *.integration.ts ]]; then
+              INTEGRATION_TEST_FILE_CHANGED=true
+            fi
+          done
+
+          if [ "$TEST_FILE_CHANGED" = true ]; then
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -X POST \
+              -d '{"labels":["unit-tests"]}' \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
+          else
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -X DELETE \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels/unit-tests"
+          fi
+
+          if [ "$INTEGRATION_TEST_FILE_CHANGED" = true ]; then
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -X POST \
+              -d '{"labels":["integration-tests"]}' \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
+          else
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -X DELETE \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels/integration-tests"
+          fi
+
+      - name: DevOps Branching
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_OWNER }}
+        run: |
+          PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
+          FILES=$(git diff --name-only origin/main HEAD)
+          DEVOPS_FILE_CHANGED=false
+
+          for file in $FILES; do
+            if [[ "$file" == .github/* || "$file" == .eb* ]]; then
+              DEVOPS_FILE_CHANGED=true
+              break
+            fi
+          done
+
+          if [ "$DEVOPS_FILE_CHANGED" = true ]; then
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -X POST \
+              -d '{"labels":["devops"]}' \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
+
+            # Get current labels
+            CURRENT_LABELS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER" | jq -r '[.labels | .[].name] | join(",")')
+
+            # Remove 'api' label if 'devops' label is added
+            if [[ "$CURRENT_LABELS" == *"api"* ]]; then
+              UPDATED_LABELS=$(echo $CURRENT_LABELS | sed 's/api,//g' | sed 's/,api//g')
+
+              curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Content-Type: application/json" \
+                -X PATCH \
+                -d "{\"labels\":[\"$(echo $UPDATED_LABELS | sed 's/,/\",\"/g')\"]}" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
+            fi
+          else
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -X DELETE \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels/devops"
+          fi
