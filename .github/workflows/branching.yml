@@ -92,6 +92,7 @@ jobs:
           done
 
           if [ "$DEVOPS_FILE_CHANGED" = true ]; then
+            # Add devops label
             curl -s -H "Authorization: token $GITHUB_TOKEN" \
               -H "Content-Type: application/json" \
               -X POST \
@@ -103,9 +104,9 @@ jobs:
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER" | jq -r '[.labels | .[].name] | join(",")')
 
             # Remove 'api' label if 'devops' label is added
-            UPDATED_LABELS=$(echo $CURRENT_LABELS | sed 's/api,//g' | sed 's/,api//g')
+            if [[ "$CURRENT_LABELS" == *"api"* ]]; then
+              UPDATED_LABELS=$(echo $CURRENT_LABELS | sed 's/api,//g' | sed 's/,api//g')
 
-            if [[ -n "$UPDATED_LABELS" ]]; then
               curl -s -H "Authorization: token $GITHUB_TOKEN" \
                 -H "Content-Type: application/json" \
                 -X PATCH \
