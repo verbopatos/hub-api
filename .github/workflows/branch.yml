@@ -42,9 +42,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_OWNER }}
         run: |
           PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
+          FILES=$(git diff --name-only origin/main...HEAD)
           TEST_FILE_CHANGED=false
           INTEGRATION_TEST_FILE_CHANGED=false
-          for file in $(git diff --name-only HEAD~1 HEAD); do
+
+          for file in $FILES; do
             if [[ "$file" == *.test.ts ]]; then
               TEST_FILE_CHANGED=true
             elif [[ "$file" == *.integration.ts ]]; then
@@ -56,16 +58,26 @@ jobs:
             curl -s -H "Authorization: token $GITHUB_TOKEN" \
               -H "Content-Type: application/json" \
               -X POST \
-              -d '{"labels":["api","unit-tests"]}' \
+              -d '{"labels":["unit-tests"]}' \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
+          else
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -X DELETE \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels/unit-tests"
           fi
 
           if [ "$INTEGRATION_TEST_FILE_CHANGED" = true ]; then
             curl -s -H "Authorization: token $GITHUB_TOKEN" \
               -H "Content-Type: application/json" \
               -X POST \
-              -d '{"labels":["api","integration-tests"]}' \
+              -d '{"labels":["integration-tests"]}' \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
+          else
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -X DELETE \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels/integration-tests"
           fi
 
       - name: DevOps Branching
@@ -73,8 +85,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.PAT_OWNER }}
         run: |
           PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
+          FILES=$(git diff --name-only origin/main...HEAD)
           DEVOPS_FILE_CHANGED=false
-          for file in $(git diff --name-only HEAD~1 HEAD); do
+
+          for file in $FILES; do
             if [[ "$file" == .github/* || "$file" == .eb* ]]; then
               DEVOPS_FILE_CHANGED=true
               break
@@ -103,4 +117,10 @@ jobs:
                 -d "{\"labels\":[\"$(echo $UPDATED_LABELS | sed 's/,/\",\"/g')\"]}" \
                 "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
             fi
+          else
+            # Remove devops label if no devops files are present
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -X DELETE \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels/devops"
           fi
