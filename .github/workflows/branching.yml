@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 2  # Ensure enough history is fetched
 
       - name: PR Branching
         env:
@@ -45,6 +47,8 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 2  # Ensure enough history is fetched
 
       - name: Test Branching
         env:
@@ -66,6 +70,8 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 2  # Ensure enough history is fetched
 
       - name: DevOps Branching
         env:
@@ -78,6 +84,13 @@ jobs:
                 -H "Content-Type: application/json" \
                 -X POST \
                 -d '{"labels":["devops"]}' \
+                "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
+
+              # Remove 'api' label if 'devops' label is added
+              curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Content-Type: application/json" \
+                -X POST \
+                -d '{"labels":["devops"], "remove":["api"]}' \
                 "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
             fi
           done
