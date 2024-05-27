@@ -68,6 +68,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_PORT: ${{ secrets.DB_PORT }}
           PORT: ${{ secrets.PORT }}
+          ROUTE53_HOSTED_ZONE_ID: ${{ secrets.ROUTE53_HOSTED_ZONE_ID }}
         run: |
           pip install awsebcli
           BRANCH_NAME=${GITHUB_REF#refs/heads/}
@@ -92,6 +93,33 @@ jobs:
           eb init -p docker $EB_APP_NAME --region $AWS_REGION
           eb create $EB_ENV_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST
           eb deploy $EB_ENV_NAME
+
+          # Get the CNAME of the new environment
+          CNAME=$(eb status $EB_ENV_NAME --verbose | grep "CNAME:" | awk '{print $2}')
+
+          # Update Route 53 record
+          BRANCH_DOMAIN=${BRANCH_NAME}.verbohub.com.br
+          cat > change-batch.json <<EOF
+          {
+            "Comment": "Update CNAME to point to new environment",
+            "Changes": [
+              {
+                "Action": "UPSERT",
+                "ResourceRecordSet": {
+                  "Name": "${BRANCH_DOMAIN}",
+                  "Type": "CNAME",
+                  "TTL": 300,
+                  "ResourceRecords": [
+                    {
+                      "Value": "${CNAME}"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+          EOF
+          aws route53 change-resource-record-sets --hosted-zone-id $ROUTE53_HOSTED_ZONE_ID --change-batch file://change-batch.json
 
           # Print logs for debugging
           echo "Printing environment logs for debugging..."
