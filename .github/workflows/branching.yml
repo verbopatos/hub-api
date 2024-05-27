@@ -105,14 +105,16 @@ jobs:
 
             # Get current labels
             CURRENT_LABELS=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER" | jq -r '.labels | map(.name) | join(",")')
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER" | jq -r '[.labels | .[].name] | join(",")')
 
             # Remove 'api' label if 'devops' label is added
-            UPDATED_LABELS=$(echo $CURRENT_LABELS | sed 's/api,//')
+            UPDATED_LABELS=$(echo $CURRENT_LABELS | sed 's/api,//g' | sed 's/,api//g')
 
-            curl -s -H "Authorization: token $GITHUB_TOKEN" \
-              -H "Content-Type: application/json" \
-              -X PATCH \
-              -d "{\"labels\":[$UPDATED_LABELS]}" \
-              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
+            if [[ -n "$UPDATED_LABELS" ]]; then
+              curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                -H "Content-Type: application/json" \
+                -X PATCH \
+                -d "{\"labels\":[\"$UPDATED_LABELS\"]}" \
+                "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER"
+            fi
           fi
