@@ -1,4 +1,4 @@
-name: Branching
+name: Branch
 
 on:
   pull_request:
@@ -35,6 +35,7 @@ jobs:
               -X POST \
               -d '{"labels":["api","bug"]}' \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
+          fi
 
       - name: Test Branching
         env:
@@ -42,10 +43,12 @@ jobs:
         run: |
           PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
           TEST_FILE_CHANGED=false
+          INTEGRATION_TEST_FILE_CHANGED=false
           for file in $(git diff --name-only HEAD~1 HEAD); do
             if [[ "$file" == *.test.ts ]]; then
               TEST_FILE_CHANGED=true
-              break
+            elif [[ "$file" == *.integration.ts ]]; then
+              INTEGRATION_TEST_FILE_CHANGED=true
             fi
           done
 
@@ -53,8 +56,17 @@ jobs:
             curl -s -H "Authorization: token $GITHUB_TOKEN" \
               -H "Content-Type: application/json" \
               -X POST \
-              -d '{"labels":["api","unit-test"]}' \
+              -d '{"labels":["api","unit-tests"]}' \
               "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
+          fi
+
+          if [ "$INTEGRATION_TEST_FILE_CHANGED" = true ]; then
+            curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              -H "Content-Type: application/json" \
+              -X POST \
+              -d '{"labels":["api","integration-tests"]}' \
+              "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/labels"
+          fi
 
       - name: DevOps Branching
         env:
