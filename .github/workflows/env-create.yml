@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  deploy:
+  deploy-non-prod-env:
     runs-on: ubuntu-latest
 
     steps:
@@ -92,3 +92,7 @@ jobs:
           eb init -p docker $EB_APP_NAME --region $AWS_REGION
           eb create $EB_ENV_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST
           eb deploy $EB_ENV_NAME
+
+          # Print logs for debugging
+          echo "Printing environment logs for debugging..."
+          eb logs --all --output=eb-logs-${BRANCH_NAME}.txt
