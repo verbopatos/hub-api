@@ -3,7 +3,7 @@ name: Sync environments with active branches
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0,6,12,18 * * *' # Runs at 00:00, 06:00, 12:00, and 18:00 UTC
+    - cron: '0 6,18 * * *' # Runs at 6 AM and 6 PM UTC
 
 jobs:
   sync-environments:
@@ -26,14 +26,14 @@ jobs:
       - name: Retrieve active branches
         id: branches
         run: |
-          BRANCHES=$(git ls-remote --heads origin | awk '{print $2}' | sed 's/refs\/heads\///' | tr '\n' ' ')
+          BRANCHES=$(git ls-remote --heads origin | awk '{print $2}' | sed 's/refs\/heads\///')
           echo "Active branches: $BRANCHES"
           echo "::set-output name=branches::$BRANCHES"
 
       - name: Retrieve existing environments
         id: environments
         run: |
-          ENVIRONMENTS=$(aws elasticbeanstalk describe-environments --region ${{ secrets.AWS_REGION }} --application-name hub-api --query "Environments[?Status != 'Terminated'].EnvironmentName" --output text | tr '\n' ' ')
+          ENVIRONMENTS=$(aws elasticbeanstalk describe-environments --region ${{ secrets.AWS_REGION }} --application-name hub-api --query "Environments[?Status != 'Terminated'].EnvironmentName" --output text)
           echo "Existing environments: $ENVIRONMENTS"
           echo "::set-output name=environments::$ENVIRONMENTS"
 
@@ -65,7 +65,6 @@ jobs:
             BRANCH=$(echo "$BRANCH" | xargs) # Trim whitespace
             BRANCH_NAME=${BRANCH//\//-} # Replace slashes with hyphens
             EB_ENV_NAME=hub-api-${BRANCH_NAME}
-            EB_APP_NAME=hub-api
 
             if [[ " $ENVIRONMENTS " == *" $EB_ENV_NAME "* ]]; then
               echo "Environment $EB_ENV_NAME exists for branch $BRANCH. Skipping sync..."
@@ -106,20 +105,14 @@ jobs:
 
           for ENV in $ENVIRONMENTS; do
             ENV=$(echo "$ENV" | xargs) # Trim whitespace
-            ENV_NAME=$(echo $ENV | sed 's/^hub-api-//') # Remove the 'hub-api' prefix
-
-            # Replace hyphen with slash if prefixed by 'feature' or 'hotfix'
-            if [[ "$ENV_NAME" =~ ^(feature|hotfix)- ]]; then
-              ENV_NAME=$(echo "$ENV_NAME" | sed 's/^\(feature\|hotfix\)-/\1\//')
-            fi
-
-            BRANCH_DOMAIN=${ENV_NAME}.verbohub.com.br
+            ENV_NAME=$(echo $ENV | sed 's/^hub-api-//')
+            ENV_BRANCH_NAME=${ENV_NAME//\//-} # Replace slashes with hyphens
 
             ENV_EXISTS=false
             for BRANCH in $BRANCHES; do
               BRANCH=$(echo "$BRANCH" | xargs) # Trim whitespace
               BRANCH_NAME=${BRANCH//\//-} # Replace slashes with hyphens
-              if [[ "$BRANCH_NAME" == "$ENV_NAME" ]]; then
+              if [[ "$BRANCH_NAME" == "$ENV_BRANCH_NAME" ]]; then
                 ENV_EXISTS=true
                 break
               fi
