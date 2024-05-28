@@ -27,6 +27,11 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           ROUTE_53_HOSTED_ZONE_ID: ${{ secrets.ROUTE53_HOSTED_ZONE_ID }}
         run: |
+
+          echo "GITHUB_SHA is ${{ github.sha }}"
+          echo "GITHUB_REF is ${{ github.ref }}"
+          echo "${{ github.event.ref }} - ${{ github.event.ref_type }}"
+
           set -e
 
           pip install awsebcli
