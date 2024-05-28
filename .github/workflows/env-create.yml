@@ -80,8 +80,10 @@ jobs:
           EB_ENV_NAME=hub-api-${BRANCH_NAME}
           EB_APP_NAME=hub-api
 
-          # Check if the environment exists
-          if eb list | grep -w $EB_ENV_NAME; then
+          # Check if the environment exists using AWS CLI
+          ENV_EXISTS=$(aws elasticbeanstalk describe-environments --region $AWS_REGION --application-name $EB_APP_NAME --environment-names $EB_ENV_NAME --query "Environments[?Status != 'Terminated'].EnvironmentName" --output text)
+
+          if [ "$ENV_EXISTS" == "$EB_ENV_NAME" ]; then
             echo "Environment $EB_ENV_NAME exists. Updating..."
             eb deploy $EB_ENV_NAME --staged
           else
