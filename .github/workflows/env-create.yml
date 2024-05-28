@@ -116,7 +116,6 @@ jobs:
   
           fi
 
-
           # Print logs for debugging
           echo "Printing environment logs for debugging..."
           eb logs $EB_ENV_NAME > "$(date +%Y-%m-%d_%H-%M-%S)_eb-logs_${EB_APP_NAME}_${BRANCH_NAME}.log"
