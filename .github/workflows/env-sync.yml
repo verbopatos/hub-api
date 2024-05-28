@@ -101,7 +101,7 @@ jobs:
                   }
                 ]
               }
-              EOF
+            EOF
 
               aws route53 change-resource-record-sets --hosted-zone-id $ROUTE_53_HOSTED_ZONE_ID --change-batch file://change-batch.json
               echo "Created environment and CNAME for $BRANCH_DOMAIN."
@@ -148,7 +148,7 @@ jobs:
                   }
                 ]
               }
-              EOF
+            EOF
 
               aws route53 change-resource-record-sets --hosted-zone-id $ROUTE_53_HOSTED_ZONE_ID --change-batch file://change-batch.json
               echo "Deleted CNAME record for $BRANCH_DOMAIN."
