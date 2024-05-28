@@ -6,6 +6,7 @@ on:
 
 jobs:
   delete-non-prod-env:
+    if: github.event.ref_type == 'branch'
     runs-on: ubuntu-latest
 
     steps:
@@ -32,7 +33,8 @@ jobs:
 
           # Get the branch name from the deletion ref
           REF=${GITHUB_REF}
-          BRANCH_NAME=${REF#refs/heads/}
+          # BRANCH_NAME=${REF#refs/heads/}
+          BRANCH_NAME=${{ github.event.ref }}
           BRANCH_NAME=${BRANCH_NAME//\//-} # Replace slashes with hyphens
           EB_ENV_NAME=hub-api-${BRANCH_NAME}
           EB_APP_NAME=hub-api
