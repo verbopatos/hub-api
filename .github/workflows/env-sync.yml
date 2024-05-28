@@ -63,11 +63,12 @@ jobs:
             EB_ENV_NAME=hub-api-${BRANCH_NAME}
             EB_APP_NAME=hub-api
 
+            eb init -p "Docker running on 64bit Amazon Linux 2023" hub-api --region $AWS_REGION
+
             if echo "$ENVIRONMENTS" | grep -q "$EB_ENV_NAME"; then
               echo "Environment $EB_ENV_NAME exists for branch $BRANCH. Skipping sync..."
             else
               echo "Environment $EB_ENV_NAME does not exist for branch $BRANCH. Creating..."
-              eb init -p "Docker running on 64bit Amazon Linux 2023" hub-api --region $AWS_REGION
               eb create $EB_ENV_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST --single
               eb deploy $EB_ENV_NAME
 
@@ -103,6 +104,9 @@ jobs:
           for ENV in $ENVIRONMENTS; do
             BRANCH_NAME=$(echo $ENV | sed 's/hub-api-//')
             BRANCH_DOMAIN=${BRANCH_NAME}.verbohub.com.br
+
+            eb init -p "Docker running on 64bit Amazon Linux 2023" hub-api --region $AWS_REGION
+
             if ! echo "$BRANCHES" | grep -q "$BRANCH_NAME"; then
               echo "Environment $ENV does not have a corresponding branch. Deleting..."
               eb terminate $ENV --force
