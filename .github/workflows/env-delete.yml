@@ -3,8 +3,6 @@ name: Delete test environment from Elastic Beanstalk
 
 on:
   delete:
-    branches:
-      - '*'
 
 jobs:
   delete-non-prod-env:
