@@ -106,7 +106,7 @@ jobs:
 
           for ENV in $ENVIRONMENTS; do
             ENV=$(echo "$ENV" | xargs) # Trim whitespace
-            ENV_NAME=$(echo $ENV | sed 's/^hub-//') # Remove the 'hub-' prefix
+            ENV_NAME=$(echo $ENV | sed 's/^hub-api-//') # Remove the 'hub-api' prefix
 
             # Replace hyphen with slash if prefixed by 'feature' or 'hotfix'
             if [[ "$ENV_NAME" =~ ^(feature|hotfix)- ]]; then
