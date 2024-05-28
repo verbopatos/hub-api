@@ -81,7 +81,7 @@ jobs:
           EB_APP_NAME=hub-api
 
           # Check if the environment exists
-          if eb list | grep $EB_ENV_NAME; then
+          if eb status $EB_ENV_NAME > /dev/null 2>&1; then
             echo "Environment $EB_ENV_NAME exists. Updating..."
             eb deploy $EB_ENV_NAME --staged
           else
@@ -114,7 +114,7 @@ jobs:
                 }
               ]
             }
-          EOF
+        EOF
 
             aws route53 change-resource-record-sets --hosted-zone-id $ROUTE_53_HOSTED_ZONE_ID --change-batch file://change-batch.json
           fi
