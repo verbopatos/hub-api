@@ -107,13 +107,11 @@ jobs:
             ENV=$(echo "$ENV" | xargs) # Trim whitespace
             ENV_NAME=$(echo $ENV | sed 's/^hub-api-//')
             ENV_BRANCH_NAME=${ENV_NAME//\//-} # Replace slashes with hyphens
-            echo "Env name: $ENV_BRANCH_NAME"
 
             ENV_EXISTS=false
             for BRANCH in $BRANCHES; do
               BRANCH=$(echo "$BRANCH" | xargs) # Trim whitespace
               BRANCH_NAME=${BRANCH//\//-} # Replace slashes with hyphens
-              echo "Branch name: $BRANCH_NAME"
               if [[ "$BRANCH_NAME" == "$ENV_BRANCH_NAME" ]]; then
                 ENV_EXISTS=true
                 break
