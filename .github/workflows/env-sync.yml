@@ -72,7 +72,7 @@ jobs:
               echo "Environment $EB_ENV_NAME does not exist for branch $BRANCH. Creating..."
               eb init -p "Docker running on 64bit Amazon Linux 2023" hub-api --region $AWS_REGION
               eb create $EB_ENV_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST --single
-              eb deploy $EB_ENV_NAME
+              eb deploy $EB_ENV_NAME --timeout 20
 
               # Get the CNAME of the new environment
               CNAME=$(eb status $EB_ENV_NAME --verbose | grep "CNAME:" | awk '{print $2}')
@@ -107,7 +107,7 @@ jobs:
             ENV=$(echo "$ENV" | xargs) # Trim whitespace
             ENV_NAME=$(echo $ENV | sed 's/^hub-api-//')
             ENV_BRANCH_NAME=${ENV_NAME//\//-} # Replace slashes with hyphens
-            echo "Env name: ENV_BRANCH_NAME"
+            echo "Env name: $ENV_BRANCH_NAME"
 
             ENV_EXISTS=false
             for BRANCH in $BRANCHES; do
