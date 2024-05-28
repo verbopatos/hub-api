@@ -29,7 +29,7 @@ jobs:
         run: |
           set -e
 
-          pip install awsebcli
+          pip install awsebcli jq
 
           echo "GITHUB_SHA is ${{ github.sha }}"
           echo "GITHUB_REF is ${{ github.ref }}"
@@ -64,7 +64,7 @@ jobs:
             echo "Environment $EB_ENV_NAME terminated successfully."
 
             # Retrieve current CNAME value before deleting
-            CNAME=$(aws elasticbeanstalk describe-environments --region $AWS_REGION --application-name $EB_APP_NAME --environment-names $EB_ENV_NAME --query "Environments[?Status == 'Terminated'].CNAME" --output text)
+            CNAME=$(aws elasticbeanstalk describe-environments --region $AWS_REGION --application-name $EB_APP_NAME --environment-names $EB_ENV_NAME --query "Environments[?Status == 'Terminated'].CNAME" --output text | awk '{print $1}')
 
             # Delete Route 53 record
             BRANCH_DOMAIN=${BRANCH_NAME}.verbohub.com.br
