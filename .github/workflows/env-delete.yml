@@ -1,4 +1,3 @@
-# env-delete-on-pr-close.yml
 name: Delete test environment from Elastic Beanstalk on PR close
 
 on:
@@ -64,6 +63,9 @@ jobs:
 
             echo "Environment $EB_ENV_NAME terminated successfully."
 
+            # Retrieve current CNAME value before deleting
+            CNAME=$(aws elasticbeanstalk describe-environments --region $AWS_REGION --application-name $EB_APP_NAME --environment-names $EB_ENV_NAME --query "Environments[?Status == 'Terminated'].CNAME" --output text)
+
             # Delete Route 53 record
             BRANCH_DOMAIN=${BRANCH_NAME}.verbohub.com.br
             cat > change-batch.json <<EOF
@@ -78,14 +80,14 @@ jobs:
                     "TTL": 300,
                     "ResourceRecords": [
                       {
-                        "Value": "${EB_ENV_NAME}.elasticbeanstalk.com"
+                        "Value": "${CNAME}"
                       }
                     ]
                   }
                 }
               ]
             }
-          EOF
+            EOF
 
             aws route53 change-resource-record-sets --hosted-zone-id $ROUTE_53_HOSTED_ZONE_ID --change-batch file://change-batch.json
             echo "Deleted CNAME record for $BRANCH_DOMAIN."
