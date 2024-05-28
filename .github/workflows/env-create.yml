@@ -81,7 +81,7 @@ jobs:
           EB_APP_NAME=hub-api
 
           # Check if the environment exists
-          if eb status $EB_ENV_NAME; then
+          if eb list | grep -w $EB_ENV_NAME; then
             echo "Environment $EB_ENV_NAME exists. Updating..."
             eb deploy $EB_ENV_NAME --staged
           else
