@@ -57,7 +57,7 @@ jobs:
 
           BRANCHES="${{ steps.branches.outputs.branches }}"
           ENVIRONMENTS="${{ steps.environments.outputs.environments }}"
-          
+
           echo "Processed branches: $BRANCHES"
           echo "Processed environments: $ENVIRONMENTS"
 
@@ -67,7 +67,7 @@ jobs:
             EB_ENV_NAME=hub-api-${BRANCH_NAME}
             EB_APP_NAME=hub-api
 
-            if echo "$ENVIRONMENTS" | grep -q "$EB_ENV_NAME"; then
+            if [[ " $ENVIRONMENTS " == *" $EB_ENV_NAME "* ]]; then
               echo "Environment $EB_ENV_NAME exists for branch $BRANCH. Skipping sync..."
             else
               echo "Environment $EB_ENV_NAME does not exist for branch $BRANCH. Creating..."
@@ -115,7 +115,17 @@ jobs:
 
             BRANCH_DOMAIN=${ENV_NAME}.verbohub.com.br
 
-            if ! echo "$BRANCHES" | grep -q "$ENV_NAME"; then
+            ENV_EXISTS=false
+            for BRANCH in $BRANCHES; do
+              BRANCH=$(echo "$BRANCH" | xargs) # Trim whitespace
+              BRANCH_NAME=${BRANCH//\//-} # Replace slashes with hyphens
+              if [[ "$BRANCH_NAME" == "$ENV_NAME" ]]; then
+                ENV_EXISTS=true
+                break
+              fi
+            done
+
+            if [ "$ENV_EXISTS" = false ]; then
               echo "Environment $ENV does not have a corresponding branch. Deleting..."
               eb terminate $ENV --force
 
