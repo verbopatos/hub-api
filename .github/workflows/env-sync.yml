@@ -127,8 +127,10 @@ jobs:
 
               echo "Environment $ENV terminated successfully."
 
+              # Retrieve current CNAME value before deleting
+              CURRENT_CNAME=$(aws route53 list-resource-record-sets --hosted-zone-id $ROUTE_53_HOSTED_ZONE_ID --query "ResourceRecordSets[?Name == '${BRANCH_DOMAIN}.'].ResourceRecords[0].Value" --output text)
+
               # Delete Route 53 record
-              BRANCH_DOMAIN=${BRANCH_NAME}.verbohub.com.br
               echo "{
                   \"Comment\": \"Delete CNAME for terminated environment\",
                   \"Changes\": [
@@ -140,7 +142,7 @@ jobs:
                         \"TTL\": 300,
                         \"ResourceRecords\": [
                           {
-                            \"Value\": \"${ENV}.elasticbeanstalk.com\"
+                            \"Value\": \"${CURRENT_CNAME}\"
                           }
                         ]
                       }
