@@ -66,6 +66,9 @@ jobs:
 
             BRANCH_NAME=${BRANCH//\//-} # Replace slashes with hyphens
             EB_ENV_NAME=hub-api-${BRANCH_NAME}
+            EB_APP_NAME=hub-api
+
+            eb init -p "Docker running on 64bit Amazon Linux 2023" $EB_APP_NAME --region $AWS_REGION
 
             if echo "$ENVIRONMENTS" | grep -q "$EB_ENV_NAME"; then
               echo "Environment $EB_ENV_NAME exists for branch $BRANCH. Updating..."
