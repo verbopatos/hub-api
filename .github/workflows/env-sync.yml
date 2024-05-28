@@ -34,7 +34,7 @@ jobs:
       - name: Retrieve existing environments
         id: environments
         run: |
-          ENVIRONMENTS=$(aws elasticbeanstalk describe-environments --region $AWS_REGION --application-name hub-api --query "Environments[?Status != 'Terminated'].EnvironmentName" --output text)
+          ENVIRONMENTS=$(aws elasticbeanstalk describe-environments --region ${{ secrets.AWS_REGION }} --application-name hub-api --query "Environments[?Status != 'Terminated'].EnvironmentName" --output text)
           echo "Existing environments: $ENVIRONMENTS"
           echo "::set-output name=environments::$ENVIRONMENTS"
 
@@ -131,7 +131,7 @@ jobs:
                   }
                 ]
               }
-              EOF
+            EOF
 
               aws route53 change-resource-record-sets --hosted-zone-id $ROUTE_53_HOSTED_ZONE_ID --change-batch file://change-batch.json
               echo "Deleted CNAME record for $BRANCH_DOMAIN."
