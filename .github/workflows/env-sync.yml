@@ -44,6 +44,13 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
           ROUTE_53_HOSTED_ZONE_ID: ${{ secrets.ROUTE53_HOSTED_ZONE_ID }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          PORT: ${{ secrets.PORT }}
+          HOST: ${{ secrets.HOST }}
         run: |
           set -e
 
@@ -53,6 +60,11 @@ jobs:
           ENVIRONMENTS="${{ steps.environments.outputs.environments }}"
 
           for BRANCH in $BRANCHES; do
+            if [[ "$BRANCH" == "env" || "$BRANCH" == "api" ]]; then
+              echo "Skipping special branch $BRANCH to avoid conflicts."
+              continue
+            fi
+
             BRANCH_NAME=${BRANCH//\//-} # Replace slashes with hyphens
             EB_ENV_NAME=hub-api-${BRANCH_NAME}
 
@@ -97,6 +109,11 @@ jobs:
           done
 
           for ENV in $ENVIRONMENTS; do
+            if [[ "$ENV" == "hub-api-env" || "$ENV" == "hub-api-api" ]]; then
+              echo "Skipping special environment $ENV to avoid conflicts."
+              continue
+            fi
+
             BRANCH_NAME=$(echo $ENV | sed 's/hub-api-//')
             if ! echo "$BRANCHES" | grep -q "$BRANCH_NAME"; then
               echo "Environment $ENV does not have a corresponding branch. Deleting..."
