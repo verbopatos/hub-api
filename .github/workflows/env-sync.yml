@@ -26,16 +26,16 @@ jobs:
       - name: Retrieve active branches
         id: branches
         run: |
-          BRANCHES=$(git ls-remote --heads origin | awk '{print $2}' | sed 's/refs\/heads\///')
+          BRANCHES=$(git ls-remote --heads origin | awk '{print $2}' | sed 's/refs\/heads\///' | tr '\n' ' ')
           echo "Active branches: $BRANCHES"
-          echo "::set-output name=branches::$BRANCHES"
+          echo "::set-output name=branches::$(echo $BRANCHES | tr '\n' ' ')"
 
       - name: Retrieve existing environments
         id: environments
         run: |
-          ENVIRONMENTS=$(aws elasticbeanstalk describe-environments --region ${{ secrets.AWS_REGION }} --application-name hub-api --query "Environments[?Status != 'Terminated'].EnvironmentName" --output text)
+          ENVIRONMENTS=$(aws elasticbeanstalk describe-environments --region ${{ secrets.AWS_REGION }} --application-name hub-api --query "Environments[?Status != 'Terminated'].EnvironmentName" --output text | tr '\n' ' ')
           echo "Existing environments: $ENVIRONMENTS"
-          echo "::set-output name=environments::$ENVIRONMENTS"
+          echo "::set-output name=environments::$(echo $ENVIRONMENTS | tr '\n' ' ')"
 
       - name: Sync environments with branches
         env:
@@ -107,11 +107,13 @@ jobs:
             ENV=$(echo "$ENV" | xargs) # Trim whitespace
             ENV_NAME=$(echo $ENV | sed 's/^hub-api-//')
             ENV_BRANCH_NAME=${ENV_NAME//\//-} # Replace slashes with hyphens
+            echo "Env name: ENV_BRANCH_NAME"
 
             ENV_EXISTS=false
             for BRANCH in $BRANCHES; do
               BRANCH=$(echo "$BRANCH" | xargs) # Trim whitespace
               BRANCH_NAME=${BRANCH//\//-} # Replace slashes with hyphens
+              echo "Branch name: $BRANCH_NAME"
               if [[ "$BRANCH_NAME" == "$ENV_BRANCH_NAME" ]]; then
                 ENV_EXISTS=true
                 break
@@ -131,7 +133,7 @@ jobs:
               echo "Environment $ENV terminated successfully."
 
               # Retrieve current CNAME value before deleting
-              CURRENT_CNAME=$(aws route53 list-resource-record-sets --hosted-zone-id $ROUTE_53_HOSTED_ZONE_ID --query "ResourceRecordSets[?Name == '${BRANCH_DOMAIN}.'].ResourceRecords[0].Value" --output text)
+              CURRENT_CNAME=$(aws route53 list-resource-record-sets --hosted-zone-id $ROUTE_53_HOSTED_ZONE_ID --query "ResourceRecordSets[?Name == '${ENV_BRANCH_NAME}.verbohub.com.br.'].ResourceRecords[0].Value" --output text)
 
               # Delete Route 53 record
               echo "{
@@ -140,7 +142,7 @@ jobs:
                     {
                       \"Action\": \"DELETE\",
                       \"ResourceRecordSet\": {
-                        \"Name\": \"${BRANCH_DOMAIN}\",
+                        \"Name\": \"${ENV_BRANCH_NAME}.verbohub.com.br\",
                         \"Type\": \"CNAME\",
                         \"TTL\": 300,
                         \"ResourceRecords\": [
@@ -154,6 +156,6 @@ jobs:
                 }" > change-batch.json
 
               aws route53 change-resource-record-sets --hosted-zone-id $ROUTE_53_HOSTED_ZONE_ID --change-batch file://change-batch.json
-              echo "Deleted CNAME record for $BRANCH_DOMAIN."
+              echo "Deleted CNAME record for ${ENV_BRANCH_NAME}.verbohub.com.br."
             fi
           done
