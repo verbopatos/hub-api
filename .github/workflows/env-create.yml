@@ -35,14 +35,14 @@ jobs:
         id: ecr-login
         run: echo "ECR_PASSWORD=$(aws ecr get-login-password --region ${{ secrets.AWS_REGION }})" >> $GITHUB_ENV
 
-      - name: Log in to Amazon ECR
-        env:
-          ECR_PASSWORD: ${{ env.ECR_PASSWORD }}
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          DOMAIN=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-          echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $DOMAIN
+#       - name: Log in to Amazon ECR
+#         env:
+#           ECR_PASSWORD: ${{ env.ECR_PASSWORD }}
+#           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+#           AWS_REGION: ${{ secrets.AWS_REGION }}
+#         run: |
+#           DOMAIN=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+#           echo "$ECR_PASSWORD" | docker login --username AWS --password-stdin $DOMAIN
 
       - name: Build, tag, and push Docker image
         env:
