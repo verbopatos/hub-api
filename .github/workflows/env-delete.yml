@@ -1,11 +1,13 @@
-# env-delete.yml
-name: Delete test environment from Elastic Beanstalk
+# env-delete-on-pr-close.yml
+name: Delete test environment from Elastic Beanstalk on PR close
 
 on:
-  delete:
+  pull_request:
+    types: [closed]
 
 jobs:
   delete-non-prod-env:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -30,11 +32,20 @@ jobs:
 
           pip install awsebcli
 
-          # Get the branch name from the deletion ref
-          BRANCH_REF=${GITHUB_REF#refs/heads/}
-          BRANCH_NAME=${BRANCH_REF//\//-} # Replace slashes with hyphens
+          echo "GITHUB_SHA is ${{ github.sha }}"
+          echo "GITHUB_REF is ${{ github.ref }}"
+          echo "GITHUB_EVENT_REF is ${{ github.event.pull_request.head.ref }}"
+          echo "GITHUB_EVENT_REF_TYPE is ${{ github.event.pull_request.base.ref_type }}"
+
+          # Get the branch name from the pull request head ref
+          BRANCH_NAME=${{ github.event.pull_request.head.ref }}
+          BRANCH_NAME=${BRANCH_NAME//\//-} # Replace slashes with hyphens
           EB_ENV_NAME=hub-api-${BRANCH_NAME}
           EB_APP_NAME=hub-api
+
+          echo "Branch ref: ${{ github.event.pull_request.head.ref }}"
+          echo "Branch name: $BRANCH_NAME"
+          echo "Environment name: $EB_ENV_NAME"
 
           # Check if the environment exists using AWS CLI
           ENV_EXISTS=$(aws elasticbeanstalk describe-environments --region $AWS_REGION --application-name $EB_APP_NAME --environment-names $EB_ENV_NAME --query "Environments[?Status != 'Terminated'].EnvironmentName" --output text)
