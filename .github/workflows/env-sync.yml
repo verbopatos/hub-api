@@ -26,16 +26,16 @@ jobs:
       - name: Retrieve active branches
         id: branches
         run: |
-          BRANCHES=$(git ls-remote --heads origin | awk '{print $2}' | sed 's/refs\/heads\///')
+          BRANCHES=$(git ls-remote --heads origin | awk '{print $2}' | sed 's/refs\/heads\///' | tr '\n' ' ')
           echo "Active branches: $BRANCHES"
-          echo "::set-output name=branches::$(echo $BRANCHES | tr '\n' ' ')"
+          echo "::set-output name=branches::$BRANCHES"
 
       - name: Retrieve existing environments
         id: environments
         run: |
-          ENVIRONMENTS=$(aws elasticbeanstalk describe-environments --region ${{ secrets.AWS_REGION }} --application-name hub-api --query "Environments[?Status != 'Terminated'].EnvironmentName" --output text)
+          ENVIRONMENTS=$(aws elasticbeanstalk describe-environments --region ${{ secrets.AWS_REGION }} --application-name hub-api --query "Environments[?Status != 'Terminated'].EnvironmentName" --output text | tr '\n' ' ')
           echo "Existing environments: $ENVIRONMENTS"
-          echo "::set-output name=environments::$(echo $ENVIRONMENTS | tr '\n' ' ')"
+          echo "::set-output name=environments::$ENVIRONMENTS"
 
       - name: Sync environments with branches
         env:
@@ -62,6 +62,7 @@ jobs:
           echo "Processed environments: $ENVIRONMENTS"
 
           for BRANCH in $BRANCHES; do
+            BRANCH=$(echo "$BRANCH" | xargs) # Trim whitespace
             BRANCH_NAME=${BRANCH//\//-} # Replace slashes with hyphens
             EB_ENV_NAME=hub-api-${BRANCH_NAME}
             EB_APP_NAME=hub-api
@@ -104,10 +105,17 @@ jobs:
           done
 
           for ENV in $ENVIRONMENTS; do
-            BRANCH_NAME=$(echo $ENV | sed 's/hub-api-//')
-            BRANCH_DOMAIN=${BRANCH_NAME}.verbohub.com.br
+            ENV=$(echo "$ENV" | xargs) # Trim whitespace
+            ENV_NAME=$(echo $ENV | sed 's/^hub-//') # Remove the 'hub-' prefix
 
-            if ! echo "$BRANCHES" | grep -q "$BRANCH_NAME"; then
+            # Replace hyphen with slash if prefixed by 'feature' or 'hotfix'
+            if [[ "$ENV_NAME" =~ ^(feature|hotfix)- ]]; then
+              ENV_NAME=$(echo "$ENV_NAME" | sed 's/^\(feature\|hotfix\)-/\1\//')
+            fi
+
+            BRANCH_DOMAIN=${ENV_NAME}.verbohub.com.br
+
+            if ! echo "$BRANCHES" | grep -q "$ENV_NAME"; then
               echo "Environment $ENV does not have a corresponding branch. Deleting..."
               eb terminate $ENV --force
 
