@@ -91,7 +91,7 @@ jobs:
 
           # Initialize and create the new environment specifying Node.js 18 platform
           eb init -p "Node.js 18 running on 64bit Amazon Linux 2" $EB_APP_NAME --region $AWS_REGION
-          eb create $EB_ENV_NAME --scale 1 --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST --single
+          eb create $EB_ENV_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST --single
 
           # Deploy the new environment
           eb deploy $EB_ENV_NAME
