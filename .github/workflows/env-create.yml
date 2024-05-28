@@ -1,14 +1,13 @@
-name: Create Temporary Environment
+# env-create.yml
+name: Deploy test environment to Elastic Beanstalk
 
 on:
   push:
     branches-ignore:
       - main
-  delete:
 
 jobs:
-  deploy:
-    if: github.event_name == 'push'
+  deploy-non-prod-env:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,6 +26,11 @@ jobs:
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
           aws configure set default.region $AWS_REGION
+
+      - name: Verify AWS CLI Configuration
+        run: |
+          aws sts get-caller-identity
+          aws ecr describe-repositories --region ${{ secrets.AWS_REGION }}
 
       - name: Get ECR login password
         id: ecr-login
@@ -47,9 +51,11 @@ jobs:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
           REPOSITORY_URI=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/hub-api
-          TAG=$(echo ${{ github.ref }} | sed 's/refs\/heads\///' | sed 's/\//-/g')
-          docker build -t $REPOSITORY_URI:$TAG .
-          docker push $REPOSITORY_URI:$TAG
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          BRANCH_NAME=${BRANCH_NAME//\//-} # Replace slashes with hyphens
+          IMAGE_TAG=${BRANCH_NAME}-latest
+          docker build -t $REPOSITORY_URI:$IMAGE_TAG .
+          docker push $REPOSITORY_URI:$IMAGE_TAG
 
       - name: Deploy to Elastic Beanstalk
         env:
@@ -63,36 +69,59 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_PORT: ${{ secrets.DB_PORT }}
           PORT: ${{ secrets.PORT }}
+          ROUTE_53_HOSTED_ZONE_ID: ${{ secrets.ROUTE53_HOSTED_ZONE_ID }}
         run: |
-          TAG=$(echo ${{ github.ref }} | sed 's/refs\/heads\///' | sed 's/\//-/g')
-          SUBDOMAIN=$TAG.verbohub.com.br
+          set -e
+
           pip install awsebcli
-          eb init -p docker hub-api --region $AWS_REGION
-          eb create $TAG-env --cname $SUBDOMAIN
-          eb use $TAG-env
-          eb setenv AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY DB_USER=$DB_USER DB_HOST=$DB_HOST DB_NAME=$DB_NAME DB_PASSWORD=$DB_PASSWORD DB_PORT=$DB_PORT PORT=$PORT HOST=$HOST
-          eb deploy
 
-  cleanup:
-    if: github.event_name == 'delete'
-    runs-on: ubuntu-latest
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          BRANCH_NAME=${BRANCH_NAME//\//-} # Replace slashes with hyphens
+          EB_ENV_NAME=hub-api-${BRANCH_NAME}
+          EB_APP_NAME=hub-api
 
-    steps:
-      - name: Configure AWS CLI
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set default.region $AWS_REGION
+          eb init -p "Docker running on 64bit Amazon Linux 2023" $EB_APP_NAME --region $AWS_REGION
 
-      - name: Delete Elastic Beanstalk Environment
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-        run: |
-          TAG=$(echo ${{ github.ref }} | sed 's/refs\/heads\///' | sed 's/\//-/g')
-          eb terminate $TAG-env --force
+          # Check if the environment exists using AWS CLI
+          ENV_EXISTS=$(aws elasticbeanstalk describe-environments --region $AWS_REGION --application-name $EB_APP_NAME --environment-names $EB_ENV_NAME --query "Environments[?Status != 'Terminated'].EnvironmentName" --output text)
+
+          if [ "$ENV_EXISTS" == "$EB_ENV_NAME" ]; then
+            echo "Environment $EB_ENV_NAME exists. Updating..."
+            eb deploy $EB_ENV_NAME --staged
+          else
+            echo "Environment $EB_ENV_NAME does not exist. Creating..."
+            eb create $EB_ENV_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST --single
+            eb deploy $EB_ENV_NAME
+
+            # Get the CNAME of the new environment
+            CNAME=$(eb status $EB_ENV_NAME --verbose | grep "CNAME:" | awk '{print $2}')
+
+            # Update Route 53 record
+            BRANCH_DOMAIN=${BRANCH_NAME}.verbohub.com.br
+            cat > change-batch.json <<EOF
+            {
+              "Comment": "Update CNAME to point to new environment",
+              "Changes": [
+                {
+                  "Action": "UPSERT",
+                  "ResourceRecordSet": {
+                    "Name": "${BRANCH_DOMAIN}",
+                    "Type": "CNAME",
+                    "TTL": 300,
+                    "ResourceRecords": [
+                      {
+                        "Value": "${CNAME}"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          EOF
+
+            aws route53 change-resource-record-sets --hosted-zone-id $ROUTE_53_HOSTED_ZONE_ID --change-batch file://change-batch.json
+          fi
+
+          # Print logs for debugging
+          echo "Printing environment logs for debugging..."
+          eb logs $EB_ENV_NAME > "$(date +%Y-%m-%d_%H-%M-%S)_eb-logs_${EB_APP_NAME}_${BRANCH_NAME}.log"
