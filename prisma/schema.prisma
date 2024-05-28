@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,19 +7,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Event {
-  id            Int       @id @default(autoincrement())
-  EventType     EventType @relation(fields: [event_type_id], references: [id])
-  datetime      DateTime
-  event_type_id Int
-
-  @@map("events")
+model event_types {
+  id     Int      @id @default(autoincrement())
+  name   String   @unique @db.VarChar(255)
+  events events[]
 }
 
-model EventType {
-  id    Int     @id @default(autoincrement())
-  name  String
-  Event Event[]
-
-  @@map("event_types")
+model events {
+  id            Int          @id @default(autoincrement())
+  event_type_id Int?
+  datetime      DateTime     @db.Timestamp(6)
+  event_types   event_types? @relation(fields: [event_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
