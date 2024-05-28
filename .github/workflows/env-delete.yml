@@ -27,14 +27,14 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
           ROUTE_53_HOSTED_ZONE_ID: ${{ secrets.ROUTE53_HOSTED_ZONE_ID }}
         run: |
+          set -e
+
+          pip install awsebcli
+
           echo "GITHUB_SHA is ${{ github.sha }}"
           echo "GITHUB_REF is ${{ github.ref }}"
           echo "GITHUB_EVENT_REF is ${{ github.event.ref }}"
           echo "GITHUB_EVENT_REF_TYPE is ${{ github.event.ref_type }}"
-
-          set -e
-
-          pip install awsebcli
 
           # Get the branch name from the deletion ref
           BRANCH_NAME=${{ github.event.ref }}
