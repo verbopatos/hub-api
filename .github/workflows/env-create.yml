@@ -1,4 +1,3 @@
-# env-create.yml
 name: Deploy test environment to Elastic Beanstalk
 
 on:
@@ -92,7 +91,9 @@ jobs:
 
           # Initialize and create the new environment without specifying a CNAME
           eb init -p docker $EB_APP_NAME --region $AWS_REGION
-          eb create $EB_ENV_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST
+          eb create $EB_ENV_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST --single
+
+          # Deploy the new environment
           eb deploy $EB_ENV_NAME
 
           # Get the CNAME of the new environment
