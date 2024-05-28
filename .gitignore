@@ -137,3 +137,8 @@ postgres-data/
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+
+
+# JetBrains
+.idea/
+*.iml
