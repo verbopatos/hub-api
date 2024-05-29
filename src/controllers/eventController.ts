@@ -1,6 +1,5 @@
 // eventController.ts
 import { Request, Response } from 'express';
-import pool from '../database';
 import { Event } from '../models/event';
 import { create, getById, getMany, remove, update } from '../services/eventService';
 
