@@ -2,7 +2,7 @@
 import { Request, Response } from 'express';
 import pool from '../database';
 import { Event } from '../models/event';
-import { create, getById, getMany } from '../services/eventService';
+import { create, getById, getMany, update } from '../services/eventService';
 
 /**
  * @swagger
@@ -211,25 +211,15 @@ export const updateEvent = async (req: Request, res: Response) => {
   const { eventTypeId, datetime } = req.body as Event;
 
   try {
-    const result = await pool.query(
-      'UPDATE events SET event_type_id = $1, datetime = $2 WHERE id = $3 RETURNING *',
-      [eventTypeId, datetime, id]
-    );
-    if (result.rows.length === 0) {
+    const result = await getById(Number(id));
+
+    if (!result) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    const updatedEvent = await pool.query(
-      `
-      SELECT events.id, events.event_type_id, events.datetime, event_types.name as event_type 
-      FROM events 
-      JOIN event_types ON events.event_type_id = event_types.id
-      WHERE events.id = $1
-    `,
-      [id]
-    );
+    const updatedEvent = await update(Number(id), { eventTypeId, datetime });
 
-    res.status(200).json(updatedEvent.rows[0]);
+    res.status(200).json(updatedEvent);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }

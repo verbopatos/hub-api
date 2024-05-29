@@ -18,3 +18,7 @@ export const getMany = (filteredConditions: any[]) => {
     },
   });
 };
+
+export const update = (id: number, event: Event) => {
+  return prisma.events.update({ where: { id }, data: event });
+};
