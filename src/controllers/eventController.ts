@@ -2,11 +2,7 @@
 import { Request, Response } from 'express';
 import pool from '../database';
 import { Event } from '../models/event';
-import {
-  createEventService,
-  getEventByIdService,
-  getEventsService,
-} from '../services/eventService';
+import { create, getById, getMany } from '../services/eventService';
 
 /**
  * @swagger
@@ -78,7 +74,7 @@ export const createEvent = async (req: Request, res: Response) => {
   const { eventTypeId, datetime } = req.body as Event;
 
   try {
-    const result = await createEventService({
+    const result = await create({
       datetime,
       eventTypeId,
     });
@@ -113,7 +109,7 @@ export const getEventById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const result = await getEventByIdService(Number(id));
+    const result = await getById(Number(id));
 
     if (!result) {
       return res.status(404).json({ message: 'Event not found' });
@@ -176,7 +172,7 @@ export const getEvents = async (req: Request, res: Response) => {
   const filteredConditions = conditions.filter(Boolean);
 
   try {
-    const result = await getEventsService(filteredConditions);
+    const result = await getMany(filteredConditions);
 
     res.status(200).json(result);
   } catch (error) {
@@ -213,6 +209,7 @@ export const getEvents = async (req: Request, res: Response) => {
 export const updateEvent = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { eventTypeId, datetime } = req.body as Event;
+
   try {
     const result = await pool.query(
       'UPDATE events SET event_type_id = $1, datetime = $2 WHERE id = $3 RETURNING *',
