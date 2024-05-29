@@ -22,3 +22,7 @@ export const getMany = (filteredConditions: any[]) => {
 export const update = (id: number, event: Event) => {
   return prisma.events.update({ where: { id }, data: event });
 };
+
+export const remove = (id: number) => {
+  return prisma.events.delete({ where: { id } });
+};

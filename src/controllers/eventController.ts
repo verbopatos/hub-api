@@ -2,7 +2,7 @@
 import { Request, Response } from 'express';
 import pool from '../database';
 import { Event } from '../models/event';
-import { create, getById, getMany, update } from '../services/eventService';
+import { create, getById, getMany, remove, update } from '../services/eventService';
 
 /**
  * @swagger
@@ -211,15 +211,15 @@ export const updateEvent = async (req: Request, res: Response) => {
   const { eventTypeId, datetime } = req.body as Event;
 
   try {
-    const result = await getById(Number(id));
+    const existingEvent = await getById(Number(id));
 
-    if (!result) {
+    if (!existingEvent) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    const updatedEvent = await update(Number(id), { eventTypeId, datetime });
+    const result = await update(Number(id), { eventTypeId, datetime });
 
-    res.status(200).json(updatedEvent);
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
@@ -247,12 +247,17 @@ export const updateEvent = async (req: Request, res: Response) => {
  */
 export const deleteEvent = async (req: Request, res: Response) => {
   const { id } = req.params;
+
   try {
-    const result = await pool.query('DELETE FROM events WHERE id = $1 RETURNING *', [id]);
-    if (result.rows.length === 0) {
+    const existingEvent = await getById(Number(id));
+
+    if (!existingEvent) {
       return res.status(404).json({ message: 'Event not found' });
     }
-    res.status(200).json(result.rows[0]);
+
+    const result = await remove(Number(id));
+
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
