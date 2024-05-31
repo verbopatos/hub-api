@@ -1,3 +1,4 @@
+//eventService.ts
 import prisma from '../prisma';
 import { Event } from '../models/event';
 
