@@ -1,7 +1,7 @@
 // eventController.ts
 import { Request, Response } from 'express';
-import pool from '../database';
 import { Event } from '../models/event';
+import { create, getById, getMany, remove, update } from '../services/eventService';
 
 /**
  * @swagger
@@ -71,12 +71,14 @@ import { Event } from '../models/event';
  */
 export const createEvent = async (req: Request, res: Response) => {
   const { eventTypeId, datetime } = req.body as Event;
+
   try {
-    const result = await pool.query(
-      'INSERT INTO events (event_type_id, datetime) VALUES ($1, $2) RETURNING *',
-      [eventTypeId, datetime]
-    );
-    res.status(201).json(result.rows[0]);
+    const result = await create({
+      datetime,
+      eventTypeId,
+    });
+
+    res.status(201).json(result);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
@@ -104,17 +106,15 @@ export const createEvent = async (req: Request, res: Response) => {
  */
 export const getEventById = async (req: Request, res: Response) => {
   const { id } = req.params;
+
   try {
-    const result = await pool.query(`
-      SELECT events.id, events.event_type_id, events.datetime, event_types.name as event_type 
-      FROM events 
-      JOIN event_types ON events.event_type_id = event_types.id
-      WHERE events.id = $1
-    `, [id]);
-    if (result.rows.length === 0) {
+    const result = await getById(Number(id));
+
+    if (!result) {
       return res.status(404).json({ message: 'Event not found' });
     }
-    res.status(200).json(result.rows[0]);
+
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
@@ -147,31 +147,33 @@ export const getEventById = async (req: Request, res: Response) => {
 export const getEvents = async (req: Request, res: Response) => {
   const { name, date } = req.query;
 
-  let query = `
-    SELECT events.id, events.event_type_id, events.datetime, event_types.name as event_type 
-    FROM events 
-    JOIN event_types ON events.event_type_id = event_types.id
-  `;
-  const conditions: string[] = [];
-  const params: any[] = [];
+  const conditions: any[] = [];
 
   if (name) {
-    conditions.push(`event_types.name ILIKE $${conditions.length + 1}`);
-    params.push(`%${name}%`);
+    conditions.push({
+      event_types: {
+        name: {
+          contains: name as string,
+          mode: 'intensitive',
+        },
+      },
+    });
   }
 
   if (date) {
-    conditions.push(`DATE(events.datetime) = $${conditions.length + 1}`);
-    params.push(date);
+    conditions.push({
+      datetime: {
+        equals: new Date(date as string),
+      },
+    });
   }
 
-  if (conditions.length > 0) {
-    query += ` WHERE ` + conditions.join(' AND ');
-  }
+  const filteredConditions = conditions.filter(Boolean);
 
   try {
-    const result = await pool.query(query, params);
-    res.status(200).json(result.rows);
+    const result = await getMany(filteredConditions);
+
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
@@ -206,23 +208,17 @@ export const getEvents = async (req: Request, res: Response) => {
 export const updateEvent = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { eventTypeId, datetime } = req.body as Event;
+
   try {
-    const result = await pool.query(
-      'UPDATE events SET event_type_id = $1, datetime = $2 WHERE id = $3 RETURNING *',
-      [eventTypeId, datetime, id]
-    );
-    if (result.rows.length === 0) {
+    const existingEvent = await getById(Number(id));
+
+    if (!existingEvent) {
       return res.status(404).json({ message: 'Event not found' });
     }
 
-    const updatedEvent = await pool.query(`
-      SELECT events.id, events.event_type_id, events.datetime, event_types.name as event_type 
-      FROM events 
-      JOIN event_types ON events.event_type_id = event_types.id
-      WHERE events.id = $1
-    `, [id]);
+    const result = await update(Number(id), { eventTypeId, datetime });
 
-    res.status(200).json(updatedEvent.rows[0]);
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
@@ -250,12 +246,17 @@ export const updateEvent = async (req: Request, res: Response) => {
  */
 export const deleteEvent = async (req: Request, res: Response) => {
   const { id } = req.params;
+
   try {
-    const result = await pool.query('DELETE FROM events WHERE id = $1 RETURNING *', [id]);
-    if (result.rows.length === 0) {
+    const existingEvent = await getById(Number(id));
+
+    if (!existingEvent) {
       return res.status(404).json({ message: 'Event not found' });
     }
-    res.status(200).json(result.rows[0]);
+
+    const result = await remove(Number(id));
+
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }
