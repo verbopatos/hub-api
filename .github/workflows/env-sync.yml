@@ -120,6 +120,8 @@ jobs:
 
             if [ "$ENV_EXISTS" = false ]; then
               echo "Environment $ENV does not have a corresponding branch. Deleting..."
+              eb init -p "Docker running on 64bit Amazon Linux 2023" hub-api --region $AWS_REGION
+
               eb terminate $ENV --force
 
               # Wait for termination to complete
