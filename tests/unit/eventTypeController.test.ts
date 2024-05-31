@@ -1,16 +1,15 @@
-// eventTypeController.test.ts
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { Request, Response } from 'express';
-import { createEventType, getEventTypeById, getEventTypes, updateEventType, deleteEventType } from '../../src/controllers/eventTypeController';
-import pool from '../../src/database';
+import {
+  createEventType,
+  getEventTypeById,
+  getEventTypes,
+  updateEventType,
+  deleteEventType,
+} from '../../src/controllers/eventTypeController';
+import * as eventTypeService from '../../src/services/eventTypeService';
 
-vi.mock('../../src/database', () => {
-  return {
-    default: {
-      query: vi.fn(),
-    },
-  };
-});
+vi.mock('../../src/services/eventTypeService');
 
 describe('Event Type Controller', () => {
   beforeEach(() => {
@@ -18,22 +17,28 @@ describe('Event Type Controller', () => {
   });
 
   it('should create an event type', async () => {
+    const mockEventType = {
+      id: 1,
+      name: 'Test Event Type',
+    };
+
     const req = {
       body: {
-        name: 'Test Event Type',
+        name: mockEventType.name,
       },
     } as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),
     } as unknown as Response;
 
-    (pool.query as vi.Mock).mockResolvedValue({ rows: [{ id: 1, ...req.body }] });
+    (eventTypeService.create as Mock).mockResolvedValue(mockEventType);
 
     await createEventType(req, res);
 
     expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith({ id: 1, ...req.body });
+    expect(res.json).toHaveBeenCalledWith(mockEventType);
   });
 
   it('should handle errors when creating an event type', async () => {
@@ -42,13 +47,14 @@ describe('Event Type Controller', () => {
         name: 'Test Event Type',
       },
     } as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),
     } as unknown as Response;
 
     const error = new Error('Database error');
-    (pool.query as vi.Mock).mockRejectedValue(error);
+    (eventTypeService.create as Mock).mockRejectedValue(error);
 
     await createEventType(req, res);
 
@@ -60,6 +66,7 @@ describe('Event Type Controller', () => {
     const req = {
       params: { id: '1' },
     } as unknown as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),
@@ -70,7 +77,7 @@ describe('Event Type Controller', () => {
       name: 'Test Event Type',
     };
 
-    (pool.query as vi.Mock).mockResolvedValue({ rows: [eventType] });
+    (eventTypeService.getById as Mock).mockResolvedValue(eventType);
 
     await getEventTypeById(req, res);
 
@@ -82,12 +89,13 @@ describe('Event Type Controller', () => {
     const req = {
       params: { id: '1' },
     } as unknown as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),
     } as unknown as Response;
 
-    (pool.query as vi.Mock).mockResolvedValue({ rows: [] });
+    (eventTypeService.getById as Mock).mockResolvedValue(null);
 
     await getEventTypeById(req, res);
 
@@ -99,13 +107,14 @@ describe('Event Type Controller', () => {
     const req = {
       params: { id: '1' },
     } as unknown as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),
     } as unknown as Response;
 
     const error = new Error('Database error');
-    (pool.query as vi.Mock).mockRejectedValue(error);
+    (eventTypeService.getById as Mock).mockRejectedValue(error);
 
     await getEventTypeById(req, res);
 
@@ -116,9 +125,10 @@ describe('Event Type Controller', () => {
   it('should get a list of event types', async () => {
     const req = {
       query: {
-        name: 'Test Event Type',
+        name: 'Event',
       },
     } as unknown as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),
@@ -129,7 +139,7 @@ describe('Event Type Controller', () => {
       { id: 2, name: 'Event Type 2' },
     ];
 
-    (pool.query as vi.Mock).mockResolvedValue({ rows: eventTypes });
+    (eventTypeService.getMany as Mock).mockResolvedValue(eventTypes);
 
     await getEventTypes(req, res);
 
@@ -149,7 +159,7 @@ describe('Event Type Controller', () => {
     } as unknown as Response;
 
     const error = new Error('Database error');
-    (pool.query as vi.Mock).mockRejectedValue(error);
+    (eventTypeService.getMany as Mock).mockRejectedValue(error);
 
     await getEventTypes(req, res);
 
@@ -164,6 +174,7 @@ describe('Event Type Controller', () => {
         name: 'Updated Event Type',
       },
     } as unknown as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),
@@ -174,7 +185,8 @@ describe('Event Type Controller', () => {
       name: 'Updated Event Type',
     };
 
-    (pool.query as vi.Mock).mockResolvedValueOnce({ rows: [updatedEventType] });
+    (eventTypeService.getById as Mock).mockResolvedValueOnce({ id: '1' });
+    (eventTypeService.update as Mock).mockResolvedValueOnce(updatedEventType);
 
     await updateEventType(req, res);
 
@@ -189,12 +201,13 @@ describe('Event Type Controller', () => {
         name: 'Updated Event Type',
       },
     } as unknown as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),
     } as unknown as Response;
 
-    (pool.query as vi.Mock).mockResolvedValueOnce({ rows: [] });
+    (eventTypeService.getById as Mock).mockResolvedValueOnce(null);
 
     await updateEventType(req, res);
 
@@ -215,7 +228,7 @@ describe('Event Type Controller', () => {
     } as unknown as Response;
 
     const error = new Error('Database error');
-    (pool.query as vi.Mock).mockRejectedValue(error);
+    (eventTypeService.update as Mock).mockRejectedValue(error);
 
     await updateEventType(req, res);
 
@@ -227,6 +240,7 @@ describe('Event Type Controller', () => {
     const req = {
       params: { id: '1' },
     } as unknown as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),
@@ -237,7 +251,8 @@ describe('Event Type Controller', () => {
       name: 'Deleted Event Type',
     };
 
-    (pool.query as vi.Mock).mockResolvedValue({ rows: [deletedEventType] });
+    (eventTypeService.getById as Mock).mockResolvedValueOnce({ id: 1 });
+    (eventTypeService.remove as Mock).mockResolvedValue(deletedEventType);
 
     await deleteEventType(req, res);
 
@@ -249,12 +264,13 @@ describe('Event Type Controller', () => {
     const req = {
       params: { id: '999' },
     } as unknown as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),
     } as unknown as Response;
 
-    (pool.query as vi.Mock).mockResolvedValue({ rows: [] });
+    (eventTypeService.getById as Mock).mockResolvedValueOnce(null);
 
     await deleteEventType(req, res);
 
@@ -266,13 +282,14 @@ describe('Event Type Controller', () => {
     const req = {
       params: { id: '1' },
     } as unknown as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),
     } as unknown as Response;
 
     const error = new Error('Database error');
-    (pool.query as vi.Mock).mockRejectedValue(error);
+    (eventTypeService.remove as Mock).mockRejectedValue(error);
 
     await deleteEventType(req, res);
 

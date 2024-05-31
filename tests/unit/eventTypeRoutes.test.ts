@@ -1,16 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import request from 'supertest';
 import express from 'express';
 import eventTypeRoutes from '../../src/routes/eventTypeRoutes';
-import pool from '../../src/database';
+import * as eventTypeService from '../../src/services/eventTypeService';
 
-vi.mock('../../src/database', () => {
-  return {
-    default: {
-      query: vi.fn(),
-    },
-  };
-});
+vi.mock('../../src/services/eventTypeService');
 
 const app = express();
 app.use(express.json());
@@ -24,21 +18,28 @@ describe('Event Type Routes', () => {
   describe('POST /api/event-types', () => {
     it('should create a new event type', async () => {
       const newEventType = { name: 'New Event Type' };
-      (pool.query as vi.Mock).mockResolvedValue({ rows: [{ id: 1, ...newEventType }] });
+
+      const createdEventType = {
+        id: 1,
+        ...newEventType,
+      };
+
+      (eventTypeService.create as Mock).mockResolvedValue(createdEventType);
 
       const res = await request(app)
         .post('/api/event-types')
-        .send(newEventType);
+        .send({ ...newEventType });
 
       expect(res.status).toBe(201);
-      expect(res.body).toEqual({ id: 1, ...newEventType });
+      expect(res.body).toEqual(createdEventType);
     });
   });
 
   describe('GET /api/event-types/:id', () => {
     it('should get an event type by ID', async () => {
       const eventType = { id: 1, name: 'Test Event Type' };
-      (pool.query as vi.Mock).mockResolvedValue({ rows: [eventType] });
+
+      (eventTypeService.getById as Mock).mockResolvedValue(eventType);
 
       const res = await request(app).get('/api/event-types/1');
 
@@ -47,7 +48,7 @@ describe('Event Type Routes', () => {
     });
 
     it('should return 404 if event type not found', async () => {
-      (pool.query as vi.Mock).mockResolvedValue({ rows: [] });
+      (eventTypeService.getById as Mock).mockResolvedValue(null);
 
       const res = await request(app).get('/api/event-types/999');
 
@@ -62,7 +63,7 @@ describe('Event Type Routes', () => {
         { id: 1, name: 'Event Type 1' },
         { id: 2, name: 'Event Type 2' },
       ];
-      (pool.query as vi.Mock).mockResolvedValue({ rows: eventTypes });
+      (eventTypeService.getMany as Mock).mockResolvedValue(eventTypes);
 
       const res = await request(app).get('/api/event-types');
 
@@ -74,18 +75,18 @@ describe('Event Type Routes', () => {
   describe('PUT /api/event-types/:id', () => {
     it('should update an event type', async () => {
       const updatedEventType = { id: 1, name: 'Updated Event Type' };
-      (pool.query as vi.Mock).mockResolvedValue({ rows: [updatedEventType] });
 
-      const res = await request(app)
-        .put('/api/event-types/1')
-        .send(updatedEventType);
+      (eventTypeService.getById as Mock).mockResolvedValue({ id: 1 });
+      (eventTypeService.update as Mock).mockResolvedValue(updatedEventType);
+
+      const res = await request(app).put('/api/event-types/1').send(updatedEventType);
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual(updatedEventType);
     });
 
     it('should return 404 if event type not found', async () => {
-      (pool.query as vi.Mock).mockResolvedValue({ rows: [] });
+      (eventTypeService.getById as Mock).mockResolvedValue(null);
 
       const res = await request(app)
         .put('/api/event-types/999')
@@ -99,7 +100,9 @@ describe('Event Type Routes', () => {
   describe('DELETE /api/event-types/:id', () => {
     it('should delete an event type', async () => {
       const deletedEventType = { id: 1, name: 'Deleted Event Type' };
-      (pool.query as vi.Mock).mockResolvedValue({ rows: [deletedEventType] });
+
+      (eventTypeService.getById as Mock).mockResolvedValue({ id: 1 });
+      (eventTypeService.remove as Mock).mockResolvedValue(deletedEventType);
 
       const res = await request(app).delete('/api/event-types/1');
 
@@ -108,7 +111,7 @@ describe('Event Type Routes', () => {
     });
 
     it('should return 404 if event type not found', async () => {
-      (pool.query as vi.Mock).mockResolvedValue({ rows: [] });
+      (eventTypeService.getById as Mock).mockResolvedValue(null);
 
       const res = await request(app).delete('/api/event-types/999');
 
