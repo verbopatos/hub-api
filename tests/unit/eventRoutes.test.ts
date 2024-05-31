@@ -2,17 +2,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import request from 'supertest';
 import express from 'express';
-import eventRoutes from '../../src/routes/eventRoutes';
 import pool from '../../src/database';
-import { createEvent, getEventById, getEvents, updateEvent, deleteEvent } from '../../src/controllers/eventController';
+import eventRoutes from '../../src/routes/eventRoutes';
+import {
+  createEvent,
+  getEventById,
+  getEvents,
+  updateEvent,
+  deleteEvent,
+} from '../../src/controllers/eventController';
+import * as eventService from '../../src/services/eventService';
 
-vi.mock('../../src/database', () => {
-  return {
-    default: {
-      query: vi.fn(),
-    },
-  };
-});
+vi.mock('../../src/services/eventService');
 
 const app = express();
 app.use(express.json());
@@ -25,12 +26,14 @@ describe('Event Routes', () => {
 
   describe('POST /api/events', () => {
     it('should create a new event', async () => {
-      const newEvent = { name: 'New Event', datetime: '2024-05-25T10:00:00Z', eventTypeId: 1 };
+      const newEvent = {
+        name: 'New Event',
+        datetime: '2024-05-25T10:00:00Z',
+        eventTypeId: 1,
+      };
       (pool.query as vi.Mock).mockResolvedValue({ rows: [{ id: 1, ...newEvent }] });
 
-      const res = await request(app)
-        .post('/api/events')
-        .send(newEvent);
+      const res = await request(app).post('/api/events').send(newEvent);
 
       expect(res.status).toBe(201);
       expect(res.body).toEqual({ id: 1, ...newEvent });
@@ -39,7 +42,12 @@ describe('Event Routes', () => {
 
   describe('GET /api/events/:id', () => {
     it('should get an event by ID', async () => {
-      const event = { id: 1, name: 'Test Event', datetime: '2024-05-25T10:00:00Z', eventTypeId: 1 };
+      const event = {
+        id: 1,
+        name: 'Test Event',
+        datetime: '2024-05-25T10:00:00Z',
+        eventTypeId: 1,
+      };
       (pool.query as vi.Mock).mockResolvedValue({ rows: [event] });
 
       const res = await request(app).get('/api/events/1');
@@ -75,12 +83,15 @@ describe('Event Routes', () => {
 
   describe('PUT /api/events/:id', () => {
     it('should update an event', async () => {
-      const updatedEvent = { id: 1, name: 'Updated Event', datetime: '2024-05-25T12:00:00Z', eventTypeId: 1 };
+      const updatedEvent = {
+        id: 1,
+        name: 'Updated Event',
+        datetime: '2024-05-25T12:00:00Z',
+        eventTypeId: 1,
+      };
       (pool.query as vi.Mock).mockResolvedValue({ rows: [updatedEvent] });
 
-      const res = await request(app)
-        .put('/api/events/1')
-        .send(updatedEvent);
+      const res = await request(app).put('/api/events/1').send(updatedEvent);
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual(updatedEvent);
@@ -100,7 +111,12 @@ describe('Event Routes', () => {
 
   describe('DELETE /api/events/:id', () => {
     it('should delete an event', async () => {
-      const deletedEvent = { id: 1, name: 'Deleted Event', datetime: '2024-05-25T10:00:00Z', eventTypeId: 1 };
+      const deletedEvent = {
+        id: 1,
+        name: 'Deleted Event',
+        datetime: '2024-05-25T10:00:00Z',
+        eventTypeId: 1,
+      };
       (pool.query as vi.Mock).mockResolvedValue({ rows: [deletedEvent] });
 
       const res = await request(app).delete('/api/events/1');
