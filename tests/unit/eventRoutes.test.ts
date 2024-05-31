@@ -1,4 +1,3 @@
-// eventRoutes.test.ts
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import request from 'supertest';
 import express from 'express';
@@ -33,8 +32,6 @@ describe('Event Routes', () => {
       const res = await request(app)
         .post('/api/events')
         .send({ ...newEvent });
-
-      console.log(res.body);
 
       expect(res.status).toBe(201);
       expect(res.body).toEqual(createdEvent);

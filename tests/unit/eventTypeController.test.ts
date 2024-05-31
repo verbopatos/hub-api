@@ -1,4 +1,3 @@
-// eventTypeController.test.ts
 import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { Request, Response } from 'express';
 import {
