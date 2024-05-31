@@ -97,7 +97,7 @@ jobs:
             CNAME=$(eb status $EB_ENV_NAME --verbose | grep "CNAME:" | awk '{print $2}')
 
             # Update Route 53 record
-            BRANCH_DOMAIN=${BRANCH_NAME}.verbohub.com.br
+            BRANCH_DOMAIN=${BRANCH_NAME}.api.verbohub.com.br
             cat > change-batch.json <<EOF
             {
               "Comment": "Update CNAME to point to new environment",

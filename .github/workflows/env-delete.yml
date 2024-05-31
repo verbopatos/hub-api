@@ -67,7 +67,7 @@ jobs:
             CNAME=$(aws elasticbeanstalk describe-environments --region $AWS_REGION --application-name $EB_APP_NAME --environment-names $EB_ENV_NAME --query "Environments[?Status == 'Terminated'].CNAME" --output text | awk '{print $1}')
 
             # Delete Route 53 record
-            BRANCH_DOMAIN=${BRANCH_NAME}.verbohub.com.br
+            BRANCH_DOMAIN=${BRANCH_NAME}.api.verbohub.com.br
             cat > change-batch.json <<EOF
             {
               "Comment": "Delete CNAME for terminated environment",
