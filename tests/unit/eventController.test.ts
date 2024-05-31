@@ -113,6 +113,7 @@ describe('Event Controller', () => {
     const req = {
       params: { id: '1' },
     } as unknown as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),
@@ -235,6 +236,7 @@ describe('Event Controller', () => {
         datetime: new Date(),
       },
     } as unknown as Request;
+
     const res = {
       status: vi.fn().mockReturnThis(),
       json: vi.fn(),

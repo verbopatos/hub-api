@@ -1,6 +1,5 @@
 // eventTypeController.ts
 import { Request, Response } from 'express';
-import pool from '../database';
 import { EventType } from '../models/eventType';
 import { create, getById, getMany, remove, update } from '../services/eventTypeService';
 
@@ -187,7 +186,7 @@ export const updateEventType = async (req: Request, res: Response) => {
     const existingEvent = await getById(Number(id));
 
     if (!existingEvent) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: 'Event type not found' });
     }
 
     const result = await update(Number(id), { name });
