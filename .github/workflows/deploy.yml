@@ -1,8 +1,7 @@
 # deploy.yml
-name: Deploy to Prod at Elastic Beanstalk
+name: Deploy to Elastic Beanstalk
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main

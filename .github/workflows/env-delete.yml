@@ -1,3 +1,4 @@
+# env-delete-on-pr-close.yml
 name: Delete test environment from Elastic Beanstalk on PR close
 
 on:
@@ -29,7 +30,7 @@ jobs:
         run: |
           set -e
 
-          pip install awsebcli jq
+          pip install awsebcli
 
           echo "GITHUB_SHA is ${{ github.sha }}"
           echo "GITHUB_REF is ${{ github.ref }}"
@@ -50,8 +51,6 @@ jobs:
           ENV_EXISTS=$(aws elasticbeanstalk describe-environments --region $AWS_REGION --application-name $EB_APP_NAME --environment-names $EB_ENV_NAME --query "Environments[?Status != 'Terminated'].EnvironmentName" --output text)
 
           if [ "$ENV_EXISTS" == "$EB_ENV_NAME" ]; then
-            eb init -p "Docker running on 64bit Amazon Linux 2023" $EB_APP_NAME --region $AWS_REGION
-          
             echo "Environment $EB_ENV_NAME exists. Deleting..."
             eb terminate $EB_ENV_NAME --force
 
@@ -62,9 +61,6 @@ jobs:
             done
 
             echo "Environment $EB_ENV_NAME terminated successfully."
-
-            # Retrieve current CNAME value before deleting
-            CNAME=$(aws elasticbeanstalk describe-environments --region $AWS_REGION --application-name $EB_APP_NAME --environment-names $EB_ENV_NAME --query "Environments[?Status == 'Terminated'].CNAME" --output text | awk '{print $1}')
 
             # Delete Route 53 record
             BRANCH_DOMAIN=${BRANCH_NAME}.verbohub.com.br
@@ -80,7 +76,7 @@ jobs:
                     "TTL": 300,
                     "ResourceRecords": [
                       {
-                        "Value": "${CNAME}"
+                        "Value": "${EB_ENV_NAME}.elasticbeanstalk.com"
                       }
                     ]
                   }

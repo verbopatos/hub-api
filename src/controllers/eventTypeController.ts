@@ -1,7 +1,7 @@
 // eventTypeController.ts
 import { Request, Response } from 'express';
+import pool from '../database';
 import { EventType } from '../models/eventType';
-import { create, getById, getMany, remove, update } from '../services/eventTypeService';
 
 /**
  * @swagger
@@ -58,17 +58,16 @@ import { create, getById, getMany, remove, update } from '../services/eventTypeS
  *         description: Server error
  */
 export const createEventType = async (req: Request, res: Response) => {
-  const { name } = req.body as EventType;
-
-  try {
-    const result = await create({
-      name,
-    });
-
-    res.status(201).json(result);
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
-  }
+    const { name } = req.body as EventType;
+    try {
+        const result = await pool.query(
+            'INSERT INTO event_types (name) VALUES ($1) RETURNING *',
+            [name]
+        );
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: (error as Error).message });
+    }
 };
 
 /**
@@ -92,19 +91,16 @@ export const createEventType = async (req: Request, res: Response) => {
  *         description: Server error
  */
 export const getEventTypeById = async (req: Request, res: Response) => {
-  const { id } = req.params;
-
-  try {
-    const result = await getById(Number(id));
-
-    if (!result) {
-      return res.status(404).json({ message: 'Event type not found' });
+    const { id } = req.params;
+    try {
+        const result = await pool.query('SELECT * FROM event_types WHERE id = $1', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Event type not found' });
+        }
+        res.status(200).json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: (error as Error).message });
     }
-
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
-  }
 };
 
 /**
@@ -126,30 +122,27 @@ export const getEventTypeById = async (req: Request, res: Response) => {
  *         description: Server error
  */
 export const getEventTypes = async (req: Request, res: Response) => {
-  const { name } = req.query;
+    const { name } = req.query;
 
-  const conditions: any[] = [];
+    let query = 'SELECT * FROM event_types';
+    const conditions: string[] = [];
+    const params: any[] = [];
 
-  if (name) {
-    conditions.push({
-      event_types: {
-        name: {
-          contains: name as string,
-          mode: 'intensitive',
-        },
-      },
-    });
-  }
+    if (name) {
+        conditions.push(`name ILIKE $${conditions.length + 1}`);
+        params.push(`%${name}%`);
+    }
 
-  const filteredConditions = conditions.filter(Boolean);
+    if (conditions.length > 0) {
+        query += ` WHERE ` + conditions.join(' AND ');
+    }
 
-  try {
-    const result = await getMany(filteredConditions);
-
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
-  }
+    try {
+        const result = await pool.query(query, params);
+        res.status(200).json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: (error as Error).message });
+    }
 };
 
 /**
@@ -179,22 +172,20 @@ export const getEventTypes = async (req: Request, res: Response) => {
  *         description: Server error
  */
 export const updateEventType = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { name } = req.body as EventType;
-
-  try {
-    const existingEvent = await getById(Number(id));
-
-    if (!existingEvent) {
-      return res.status(404).json({ message: 'Event type not found' });
+    const { id } = req.params;
+    const { name } = req.body as EventType;
+    try {
+        const result = await pool.query(
+            'UPDATE event_types SET name = $1 WHERE id = $2 RETURNING *',
+            [name, id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Event type not found' });
+        }
+        res.status(200).json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: (error as Error).message });
     }
-
-    const result = await update(Number(id), { name });
-
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
-  }
 };
 
 /**
@@ -218,19 +209,14 @@ export const updateEventType = async (req: Request, res: Response) => {
  *         description: Server error
  */
 export const deleteEventType = async (req: Request, res: Response) => {
-  const { id } = req.params;
-
-  try {
-    const existingEvent = await getById(Number(id));
-
-    if (!existingEvent) {
-      return res.status(404).json({ message: 'Event type not found' });
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM event_types WHERE id = $1 RETURNING *', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'Event type not found' });
+        }
+        res.status(200).json(result.rows[0]);
+    } catch (error) {
+        res.status(500).json({ error: (error as Error).message });
     }
-
-    const result = await remove(Number(id));
-
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ error: (error as Error).message });
-  }
 };
