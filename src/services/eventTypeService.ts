@@ -23,3 +23,4 @@ export const update = (id: number, eventType: EventType) => {
 export const remove = (id: number) => {
   return prisma.event_types.delete({ where: { id } });
 };
+// Path: src/services/eventService.ts

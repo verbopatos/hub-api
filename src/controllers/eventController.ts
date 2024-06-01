@@ -154,16 +154,21 @@ export const getEvents = async (req: Request, res: Response) => {
       event_types: {
         name: {
           contains: name as string,
-          mode: 'intensitive',
+          mode: 'insensitive',
         },
       },
     });
   }
 
   if (date) {
+    const startDate = new Date(date as string);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
+
     conditions.push({
       datetime: {
-        equals: new Date(date as string),
+        gte: startDate,
+        lt: endDate,
       },
     });
   }
@@ -261,3 +266,5 @@ export const deleteEvent = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message });
   }
 };
+
+// Path: src/controllers/eventController.ts
