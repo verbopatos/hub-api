@@ -1,10 +1,9 @@
-#env-sync.yml
 name: Sync environments with active branches
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 6,12,18,23 * * *' # Runs at 6 AM and 6 PM UTC
+    - cron: '0 6,12,18,23 * * *' # Runs at 6 AM, 12 PM, 6 PM, and 11 PM UTC
 
 jobs:
   sync-environments:
@@ -50,7 +49,6 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_PORT: ${{ secrets.DB_PORT }}
           PORT: ${{ secrets.PORT }}
-          HOST: ${{ secrets.HOST }}
         run: |
           set -e
 
@@ -71,6 +69,7 @@ jobs:
               echo "Environment $EB_ENV_NAME exists for branch $BRANCH. Skipping sync..."
             else
               echo "Environment $EB_ENV_NAME does not exist for branch $BRANCH. Creating..."
+              HOST=${BRANCH_NAME}.api.verbohub.com.br
               eb init -p "Docker running on 64bit Amazon Linux 2023" hub-api --region $AWS_REGION
               eb create $EB_ENV_NAME --envvars AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY,DB_USER=$DB_USER,DB_HOST=$DB_HOST,DB_NAME=$DB_NAME,DB_PASSWORD=$DB_PASSWORD,DB_PORT=$DB_PORT,PORT=$PORT,HOST=$HOST --single
               eb deploy $EB_ENV_NAME --timeout 20
