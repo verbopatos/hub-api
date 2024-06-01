@@ -26,6 +26,7 @@ services:
       DB_NAME: ${DB_NAME:-hub}
       DB_PASSWORD: ${DB_PASSWORD:-password}
       DB_PORT: ${DB_PORT:-5432}
+      DATABASE_URL: "postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@${DB_HOST:-hub-db}:${DB_PORT:-5432}/${DB_NAME:-hub}"
       PORT: ${PORT:-3000}
     ports:
       - "3000:3000"
