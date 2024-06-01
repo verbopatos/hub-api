@@ -1,3 +1,4 @@
+#env-delete.yml
 name: Delete test environment from Elastic Beanstalk on PR close
 
 on:
