@@ -106,3 +106,5 @@ router.put('/events/:id', updateEvent);
 router.delete('/events/:id', deleteEvent);
 
 export default router;
+
+// Path: src/routes/eventRoutes.ts

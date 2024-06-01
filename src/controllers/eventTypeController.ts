@@ -20,8 +20,7 @@ import { create, getById, getMany, remove, update } from '../services/eventTypeS
  *           description: The name of the event type
  *     CreateEventType:
  *       type: object
- *       required:
- *         - name
+ *       required: true
  *       properties:
  *         name:
  *           type: string
@@ -132,11 +131,9 @@ export const getEventTypes = async (req: Request, res: Response) => {
 
   if (name) {
     conditions.push({
-      event_types: {
-        name: {
-          contains: name as string,
-          mode: 'intensitive',
-        },
+      name: {
+        contains: name as string,
+        mode: 'insensitive',
       },
     });
   }
@@ -234,3 +231,4 @@ export const deleteEventType = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message });
   }
 };
+// Path: src/controllers/eventController.ts
