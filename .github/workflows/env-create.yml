@@ -104,6 +104,7 @@ jobs:
 
           if [ "$ENV_EXISTS" == "$EB_ENV_NAME" ]; then
             echo "Environment $EB_ENV_NAME exists. Updating..."
+            eb setenv AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY DB_USER=$DB_USER DB_HOST=$DB_HOST DB_NAME=$DB_NAME DB_PASSWORD=$DB_PASSWORD DB_PORT=$DB_PORT PORT=$PORT HOST=$HOST DATABASE_URL=$DATABASE_URL
             eb deploy $EB_ENV_NAME --staged
           else
             echo "Environment $EB_ENV_NAME does not exist. Creating..."
