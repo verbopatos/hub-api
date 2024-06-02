@@ -1,9 +1,9 @@
 //eventTypeService.test.ts
-import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
-import * as eventTypeService from '../../src/services/eventTypeService';
-import prisma from '../../src/prisma';
+import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
+import * as eventTypeService from "../../src/services/eventTypeService";
+import prisma from "../../src/prisma";
 
-vi.mock('../../src/prisma', () => {
+vi.mock("../../src/prisma", () => {
   return {
     default: {
       event_types: {
@@ -17,7 +17,7 @@ vi.mock('../../src/prisma', () => {
   };
 });
 
-describe('EventType Service', () => {
+describe("EventType Service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -26,8 +26,8 @@ describe('EventType Service', () => {
     vi.resetAllMocks();
   });
 
-  it('should create an event type', async () => {
-    const mockEventType = { id: 1, name: 'Conference' };
+  it("should create an event type", async () => {
+    const mockEventType = { id: 1, name: "Conference" };
 
     (prisma.event_types.create as Mock).mockResolvedValue(mockEventType);
 
@@ -39,8 +39,8 @@ describe('EventType Service', () => {
     });
   });
 
-  it('should get an event type by ID', async () => {
-    const mockEventType = { id: 1, name: 'Conference' };
+  it("should get an event type by ID", async () => {
+    const mockEventType = { id: 1, name: "Conference" };
 
     (prisma.event_types.findUnique as Mock).mockResolvedValue(mockEventType);
 
@@ -52,7 +52,7 @@ describe('EventType Service', () => {
     });
   });
 
-  it('should return null if event type by ID is not found', async () => {
+  it("should return null if event type by ID is not found", async () => {
     (prisma.event_types.findUnique as Mock).mockResolvedValue(null);
 
     const result = await eventTypeService.getById(999);
@@ -63,10 +63,10 @@ describe('EventType Service', () => {
     });
   });
 
-  it('should get a list of event types without conditions', async () => {
+  it("should get a list of event types without conditions", async () => {
     const mockEventTypes = [
-      { id: 1, name: 'Conference' },
-      { id: 2, name: 'Workshop' },
+      { id: 1, name: "Conference" },
+      { id: 2, name: "Workshop" },
     ];
 
     (prisma.event_types.findMany as Mock).mockResolvedValue(mockEventTypes);
@@ -79,9 +79,9 @@ describe('EventType Service', () => {
     });
   });
 
-  it('should get a list of event types with conditions', async () => {
-    const mockEventTypes = [{ id: 1, name: 'Conference' }];
-    const conditions = [{ name: 'Conference' }];
+  it("should get a list of event types with conditions", async () => {
+    const mockEventTypes = [{ id: 1, name: "Conference" }];
+    const conditions = [{ name: "Conference" }];
 
     (prisma.event_types.findMany as Mock).mockResolvedValue(mockEventTypes);
 
@@ -93,8 +93,8 @@ describe('EventType Service', () => {
     });
   });
 
-  it('should update an event type', async () => {
-    const mockEventType = { id: 1, name: 'Conference' };
+  it("should update an event type", async () => {
+    const mockEventType = { id: 1, name: "Conference" };
 
     (prisma.event_types.update as Mock).mockResolvedValue(mockEventType);
 
@@ -107,8 +107,8 @@ describe('EventType Service', () => {
     });
   });
 
-  it('should delete an event type', async () => {
-    const mockEventType = { id: 1, name: 'Conference' };
+  it("should delete an event type", async () => {
+    const mockEventType = { id: 1, name: "Conference" };
 
     (prisma.event_types.delete as Mock).mockResolvedValue(mockEventType);
 

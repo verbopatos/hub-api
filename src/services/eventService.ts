@@ -1,15 +1,15 @@
 //eventService.ts
-import prisma from '../prisma';
-import { Event } from '../models/event';
+import prisma from "../prisma";
+import { Event } from "../models/event";
 
 export const create = (event: Event) => {
   return prisma.events.create({
     data: {
       datetime: event.datetime,
       event_types: {
-        connect: { id: event.eventTypeId }
-      }
-    }
+        connect: { id: event.eventTypeId },
+      },
+    },
   });
 };
 
@@ -35,9 +35,9 @@ export const update = (id: number, event: Event) => {
     data: {
       datetime: event.datetime,
       event_types: {
-        connect: { id: event.eventTypeId }
-      }
-    }
+        connect: { id: event.eventTypeId },
+      },
+    },
   });
 };
 

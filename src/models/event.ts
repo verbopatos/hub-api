@@ -1,7 +1,6 @@
 // event.ts
 export interface Event {
-    id?: number;
-    eventTypeId: number;
-    datetime: Date;
-  }
-  
+  id?: number;
+  eventTypeId: number;
+  datetime: Date;
+}
