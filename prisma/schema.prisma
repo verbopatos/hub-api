@@ -3,7 +3,6 @@ generator client {
   binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
 }
 
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -20,4 +19,10 @@ model events {
   event_type_id Int?
   datetime      DateTime     @db.Timestamp(6)
   event_types   event_types? @relation(fields: [event_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model users {
+  id       Int    @id @default(autoincrement())
+  email    String @unique @db.VarChar(255)
+  password String
 }
