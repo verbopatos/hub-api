@@ -21,7 +21,7 @@ model events {
   event_types   event_types? @relation(fields: [event_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model users {
+model members {
   id       Int    @id @default(autoincrement())
   email    String @unique @db.VarChar(255)
   password String
