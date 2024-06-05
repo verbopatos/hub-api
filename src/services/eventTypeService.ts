@@ -1,6 +1,6 @@
 //eventTypeService.ts
-import prisma from '../prisma';
-import { EventType } from '../models/eventType';
+import prisma from "../prisma";
+import { EventType } from "../models/eventType";
 
 export const create = (eventType: EventType) => {
   return prisma.event_types.create({ data: eventType });

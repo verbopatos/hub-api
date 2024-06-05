@@ -1,7 +1,13 @@
 // eventTypeController.ts
-import { Request, Response } from 'express';
-import { EventType } from '../models/eventType';
-import { create, getById, getMany, remove, update } from '../services/eventTypeService';
+import { Request, Response } from "express";
+import { EventType } from "../models/eventType";
+import {
+  create,
+  getById,
+  getMany,
+  remove,
+  update,
+} from "../services/eventTypeService";
 
 /**
  * @swagger
@@ -97,7 +103,7 @@ export const getEventTypeById = async (req: Request, res: Response) => {
     const result = await getById(Number(id));
 
     if (!result) {
-      return res.status(404).json({ message: 'Event type not found' });
+      return res.status(404).json({ message: "Event type not found" });
     }
 
     res.status(200).json(result);
@@ -133,7 +139,7 @@ export const getEventTypes = async (req: Request, res: Response) => {
     conditions.push({
       name: {
         contains: name as string,
-        mode: 'insensitive',
+        mode: "insensitive",
       },
     });
   }
@@ -183,7 +189,7 @@ export const updateEventType = async (req: Request, res: Response) => {
     const existingEvent = await getById(Number(id));
 
     if (!existingEvent) {
-      return res.status(404).json({ message: 'Event type not found' });
+      return res.status(404).json({ message: "Event type not found" });
     }
 
     const result = await update(Number(id), { name });
@@ -221,7 +227,7 @@ export const deleteEventType = async (req: Request, res: Response) => {
     const existingEvent = await getById(Number(id));
 
     if (!existingEvent) {
-      return res.status(404).json({ message: 'Event type not found' });
+      return res.status(404).json({ message: "Event type not found" });
     }
 
     const result = await remove(Number(id));

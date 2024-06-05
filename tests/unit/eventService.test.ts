@@ -1,9 +1,9 @@
 //eventService.test.ts
-import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
-import * as eventService from '../../src/services/eventService';
-import prisma from '../../src/prisma';
+import { describe, it, expect, vi, beforeEach, afterEach, Mock } from "vitest";
+import * as eventService from "../../src/services/eventService";
+import prisma from "../../src/prisma";
 
-vi.mock('../../src/prisma', () => {
+vi.mock("../../src/prisma", () => {
   return {
     default: {
       events: {
@@ -17,7 +17,7 @@ vi.mock('../../src/prisma', () => {
   };
 });
 
-describe('Event Service', () => {
+describe("Event Service", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -26,7 +26,7 @@ describe('Event Service', () => {
     vi.resetAllMocks();
   });
 
-  it('should create an event', async () => {
+  it("should create an event", async () => {
     const mockEvent = { id: 1, eventTypeId: 1, datetime: new Date() };
 
     const mockEventInput = {
@@ -48,7 +48,7 @@ describe('Event Service', () => {
     expect(prisma.events.create).toHaveBeenCalledWith(mockEventInput);
   });
 
-  it('should get an event by ID', async () => {
+  it("should get an event by ID", async () => {
     const mockEvent = { id: 1, eventTypeId: 1, datetime: new Date() };
 
     (prisma.events.findUnique as Mock).mockResolvedValue(mockEvent);
@@ -62,7 +62,7 @@ describe('Event Service', () => {
     });
   });
 
-  it('should return null if event by ID is not found', async () => {
+  it("should return null if event by ID is not found", async () => {
     (prisma.events.findUnique as Mock).mockResolvedValue(null);
 
     const result = await eventService.getById(999);
@@ -74,7 +74,7 @@ describe('Event Service', () => {
     });
   });
 
-  it('should get a list of events without conditions', async () => {
+  it("should get a list of events without conditions", async () => {
     const mockEvents = [
       { id: 1, eventTypeId: 1, datetime: new Date() },
       { id: 2, eventTypeId: 2, datetime: new Date() },
@@ -91,7 +91,7 @@ describe('Event Service', () => {
     });
   });
 
-  it('should get a list of events with conditions', async () => {
+  it("should get a list of events with conditions", async () => {
     const mockEvents = [{ id: 1, eventTypeId: 1, datetime: new Date() }];
     const conditions = [{ eventTypeId: 1 }];
 
@@ -106,7 +106,7 @@ describe('Event Service', () => {
     });
   });
 
-  it('should update an event', async () => {
+  it("should update an event", async () => {
     const mockEvent = { id: 1, eventTypeId: 1, datetime: new Date() };
 
     const mockEventInput = {
@@ -131,7 +131,7 @@ describe('Event Service', () => {
     expect(prisma.events.update).toHaveBeenCalledWith(mockEventInput);
   });
 
-  it('should delete an event', async () => {
+  it("should delete an event", async () => {
     const mockEvent = { id: 1, eventTypeId: 1, datetime: new Date() };
 
     (prisma.events.delete as Mock).mockResolvedValue(mockEvent);

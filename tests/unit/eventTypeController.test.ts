@@ -1,25 +1,25 @@
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
-import { Request, Response } from 'express';
+import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
+import { Request, Response } from "express";
 import {
   createEventType,
   getEventTypeById,
   getEventTypes,
   updateEventType,
   deleteEventType,
-} from '../../src/controllers/eventTypeController';
-import * as eventTypeService from '../../src/services/eventTypeService';
+} from "../../src/controllers/eventTypeController";
+import * as eventTypeService from "../../src/services/eventTypeService";
 
-vi.mock('../../src/services/eventTypeService');
+vi.mock("../../src/services/eventTypeService");
 
-describe('Event Type Controller', () => {
+describe("Event Type Controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should create an event type', async () => {
+  it("should create an event type", async () => {
     const mockEventType = {
       id: 1,
-      name: 'Test Event Type',
+      name: "Test Event Type",
     };
 
     const req = {
@@ -41,10 +41,10 @@ describe('Event Type Controller', () => {
     expect(res.json).toHaveBeenCalledWith(mockEventType);
   });
 
-  it('should handle errors when creating an event type', async () => {
+  it("should handle errors when creating an event type", async () => {
     const req = {
       body: {
-        name: 'Test Event Type',
+        name: "Test Event Type",
       },
     } as Request;
 
@@ -53,7 +53,7 @@ describe('Event Type Controller', () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    const error = new Error('Database error');
+    const error = new Error("Database error");
     (eventTypeService.create as Mock).mockRejectedValue(error);
 
     await createEventType(req, res);
@@ -62,9 +62,9 @@ describe('Event Type Controller', () => {
     expect(res.json).toHaveBeenCalledWith({ error: error.message });
   });
 
-  it('should get an event type by ID', async () => {
+  it("should get an event type by ID", async () => {
     const req = {
-      params: { id: '1' },
+      params: { id: "1" },
     } as unknown as Request;
 
     const res = {
@@ -74,7 +74,7 @@ describe('Event Type Controller', () => {
 
     const eventType = {
       id: 1,
-      name: 'Test Event Type',
+      name: "Test Event Type",
     };
 
     (eventTypeService.getById as Mock).mockResolvedValue(eventType);
@@ -85,9 +85,9 @@ describe('Event Type Controller', () => {
     expect(res.json).toHaveBeenCalledWith(eventType);
   });
 
-  it('should return 404 if event type by ID is not found', async () => {
+  it("should return 404 if event type by ID is not found", async () => {
     const req = {
-      params: { id: '1' },
+      params: { id: "1" },
     } as unknown as Request;
 
     const res = {
@@ -100,12 +100,12 @@ describe('Event Type Controller', () => {
     await getEventTypeById(req, res);
 
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Event type not found' });
+    expect(res.json).toHaveBeenCalledWith({ message: "Event type not found" });
   });
 
-  it('should handle errors when getting an event type by ID', async () => {
+  it("should handle errors when getting an event type by ID", async () => {
     const req = {
-      params: { id: '1' },
+      params: { id: "1" },
     } as unknown as Request;
 
     const res = {
@@ -113,7 +113,7 @@ describe('Event Type Controller', () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    const error = new Error('Database error');
+    const error = new Error("Database error");
     (eventTypeService.getById as Mock).mockRejectedValue(error);
 
     await getEventTypeById(req, res);
@@ -122,10 +122,10 @@ describe('Event Type Controller', () => {
     expect(res.json).toHaveBeenCalledWith({ error: error.message });
   });
 
-  it('should get a list of event types', async () => {
+  it("should get a list of event types", async () => {
     const req = {
       query: {
-        name: 'Event',
+        name: "Event",
       },
     } as unknown as Request;
 
@@ -135,8 +135,8 @@ describe('Event Type Controller', () => {
     } as unknown as Response;
 
     const eventTypes = [
-      { id: 1, name: 'Event Type 1' },
-      { id: 2, name: 'Event Type 2' },
+      { id: 1, name: "Event Type 1" },
+      { id: 2, name: "Event Type 2" },
     ];
 
     (eventTypeService.getMany as Mock).mockResolvedValue(eventTypes);
@@ -147,10 +147,10 @@ describe('Event Type Controller', () => {
     expect(res.json).toHaveBeenCalledWith(eventTypes);
   });
 
-  it('should handle errors when getting a list of event types', async () => {
+  it("should handle errors when getting a list of event types", async () => {
     const req = {
       query: {
-        name: 'Test Event Type',
+        name: "Test Event Type",
       },
     } as unknown as Request;
     const res = {
@@ -158,7 +158,7 @@ describe('Event Type Controller', () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    const error = new Error('Database error');
+    const error = new Error("Database error");
     (eventTypeService.getMany as Mock).mockRejectedValue(error);
 
     await getEventTypes(req, res);
@@ -167,11 +167,11 @@ describe('Event Type Controller', () => {
     expect(res.json).toHaveBeenCalledWith({ error: error.message });
   });
 
-  it('should update an event type', async () => {
+  it("should update an event type", async () => {
     const req = {
-      params: { id: '1' },
+      params: { id: "1" },
       body: {
-        name: 'Updated Event Type',
+        name: "Updated Event Type",
       },
     } as unknown as Request;
 
@@ -182,10 +182,10 @@ describe('Event Type Controller', () => {
 
     const updatedEventType = {
       id: 1,
-      name: 'Updated Event Type',
+      name: "Updated Event Type",
     };
 
-    (eventTypeService.getById as Mock).mockResolvedValueOnce({ id: '1' });
+    (eventTypeService.getById as Mock).mockResolvedValueOnce({ id: "1" });
     (eventTypeService.update as Mock).mockResolvedValueOnce(updatedEventType);
 
     await updateEventType(req, res);
@@ -194,11 +194,11 @@ describe('Event Type Controller', () => {
     expect(res.json).toHaveBeenCalledWith(updatedEventType);
   });
 
-  it('should return 404 if event type to update is not found', async () => {
+  it("should return 404 if event type to update is not found", async () => {
     const req = {
-      params: { id: '999' },
+      params: { id: "999" },
       body: {
-        name: 'Updated Event Type',
+        name: "Updated Event Type",
       },
     } as unknown as Request;
 
@@ -212,14 +212,14 @@ describe('Event Type Controller', () => {
     await updateEventType(req, res);
 
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Event type not found' });
+    expect(res.json).toHaveBeenCalledWith({ message: "Event type not found" });
   });
 
-  it('should handle errors when updating an event type', async () => {
+  it("should handle errors when updating an event type", async () => {
     const req = {
-      params: { id: '1' },
+      params: { id: "1" },
       body: {
-        name: 'Updated Event Type',
+        name: "Updated Event Type",
       },
     } as unknown as Request;
     const res = {
@@ -227,7 +227,7 @@ describe('Event Type Controller', () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    const error = new Error('Database error');
+    const error = new Error("Database error");
     (eventTypeService.update as Mock).mockRejectedValue(error);
 
     await updateEventType(req, res);
@@ -236,9 +236,9 @@ describe('Event Type Controller', () => {
     expect(res.json).toHaveBeenCalledWith({ error: error.message });
   });
 
-  it('should delete an event type', async () => {
+  it("should delete an event type", async () => {
     const req = {
-      params: { id: '1' },
+      params: { id: "1" },
     } as unknown as Request;
 
     const res = {
@@ -248,7 +248,7 @@ describe('Event Type Controller', () => {
 
     const deletedEventType = {
       id: 1,
-      name: 'Deleted Event Type',
+      name: "Deleted Event Type",
     };
 
     (eventTypeService.getById as Mock).mockResolvedValueOnce({ id: 1 });
@@ -260,9 +260,9 @@ describe('Event Type Controller', () => {
     expect(res.json).toHaveBeenCalledWith(deletedEventType);
   });
 
-  it('should return 404 if event type to delete is not found', async () => {
+  it("should return 404 if event type to delete is not found", async () => {
     const req = {
-      params: { id: '999' },
+      params: { id: "999" },
     } as unknown as Request;
 
     const res = {
@@ -275,12 +275,12 @@ describe('Event Type Controller', () => {
     await deleteEventType(req, res);
 
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: 'Event type not found' });
+    expect(res.json).toHaveBeenCalledWith({ message: "Event type not found" });
   });
 
-  it('should handle errors when deleting an event type', async () => {
+  it("should handle errors when deleting an event type", async () => {
     const req = {
-      params: { id: '1' },
+      params: { id: "1" },
     } as unknown as Request;
 
     const res = {
@@ -288,7 +288,7 @@ describe('Event Type Controller', () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    const error = new Error('Database error');
+    const error = new Error("Database error");
     (eventTypeService.remove as Mock).mockRejectedValue(error);
 
     await deleteEventType(req, res);
