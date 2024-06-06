@@ -23,9 +23,19 @@ CREATE TABLE "Roles" (
     CONSTRAINT "roles_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Departments" (
+    "id" SERIAL NOT NULL,
+    "name" VARCHAR(255) NOT NULL UNIQUE,
+
+    CONSTRAINT "departments_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "eventTypeNames_key" ON "EventTypes"("name");
 CREATE UNIQUE INDEX "roleNames_key" ON "Roles"("name");
+CREATE UNIQUE INDEX "departments_key" ON "Departments"("name");
+
 
 -- AddForeignKey
 ALTER TABLE "Events" ADD CONSTRAINT "events_eventTypeId_fkey" FOREIGN KEY ("eventTypeId") REFERENCES "EventTypes"("id") ON DELETE NO ACTION ON UPDATE NO ACTION;
