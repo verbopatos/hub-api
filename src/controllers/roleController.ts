@@ -215,7 +215,7 @@ export const updateRole = async (req: Request, res: Response) => {
  *           type: integer
  *         required: true
  *     responses:
- *       204:
+ *       200:
  *         description: Role deleted successfully
  *       404:
  *         description: Role not found
@@ -232,9 +232,9 @@ export const deleteRole = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Role not found" });
     }
 
-    await remove(Number(id));
+    const result = await remove(Number(id));
 
-    res.status(204).send();
+    res.status(200).json(result);
   } catch (error) {
     res.status(500).json({ error: (error as Error).message });
   }

@@ -6,7 +6,7 @@ import prisma from "../../src/prisma";
 vi.mock("../../src/prisma", () => {
   return {
     default: {
-      event_types: {
+      eventType: {
         create: vi.fn(),
         findUnique: vi.fn(),
         findMany: vi.fn(),
@@ -29,12 +29,12 @@ describe("EventType Service", () => {
   it("should create an event type", async () => {
     const mockEventType = { id: 1, name: "Conference" };
 
-    (prisma.event_types.create as Mock).mockResolvedValue(mockEventType);
+    (prisma.eventType.create as Mock).mockResolvedValue(mockEventType);
 
     const result = await eventTypeService.create(mockEventType);
 
     expect(result).toEqual(mockEventType);
-    expect(prisma.event_types.create).toHaveBeenCalledWith({
+    expect(prisma.eventType.create).toHaveBeenCalledWith({
       data: mockEventType,
     });
   });
@@ -42,23 +42,23 @@ describe("EventType Service", () => {
   it("should get an event type by ID", async () => {
     const mockEventType = { id: 1, name: "Conference" };
 
-    (prisma.event_types.findUnique as Mock).mockResolvedValue(mockEventType);
+    (prisma.eventType.findUnique as Mock).mockResolvedValue(mockEventType);
 
     const result = await eventTypeService.getById(1);
 
     expect(result).toEqual(mockEventType);
-    expect(prisma.event_types.findUnique).toHaveBeenCalledWith({
+    expect(prisma.eventType.findUnique).toHaveBeenCalledWith({
       where: { id: 1 },
     });
   });
 
   it("should return null if event type by ID is not found", async () => {
-    (prisma.event_types.findUnique as Mock).mockResolvedValue(null);
+    (prisma.eventType.findUnique as Mock).mockResolvedValue(null);
 
     const result = await eventTypeService.getById(999);
 
     expect(result).toBeNull();
-    expect(prisma.event_types.findUnique).toHaveBeenCalledWith({
+    expect(prisma.eventType.findUnique).toHaveBeenCalledWith({
       where: { id: 999 },
     });
   });
@@ -69,12 +69,12 @@ describe("EventType Service", () => {
       { id: 2, name: "Workshop" },
     ];
 
-    (prisma.event_types.findMany as Mock).mockResolvedValue(mockEventTypes);
+    (prisma.eventType.findMany as Mock).mockResolvedValue(mockEventTypes);
 
     const result = await eventTypeService.getMany([]);
 
     expect(result).toEqual(mockEventTypes);
-    expect(prisma.event_types.findMany).toHaveBeenCalledWith({
+    expect(prisma.eventType.findMany).toHaveBeenCalledWith({
       where: {},
     });
   });
@@ -83,12 +83,12 @@ describe("EventType Service", () => {
     const mockEventTypes = [{ id: 1, name: "Conference" }];
     const conditions = [{ name: "Conference" }];
 
-    (prisma.event_types.findMany as Mock).mockResolvedValue(mockEventTypes);
+    (prisma.eventType.findMany as Mock).mockResolvedValue(mockEventTypes);
 
     const result = await eventTypeService.getMany(conditions);
 
     expect(result).toEqual(mockEventTypes);
-    expect(prisma.event_types.findMany).toHaveBeenCalledWith({
+    expect(prisma.eventType.findMany).toHaveBeenCalledWith({
       where: { AND: conditions },
     });
   });
@@ -96,12 +96,12 @@ describe("EventType Service", () => {
   it("should update an event type", async () => {
     const mockEventType = { id: 1, name: "Conference" };
 
-    (prisma.event_types.update as Mock).mockResolvedValue(mockEventType);
+    (prisma.eventType.update as Mock).mockResolvedValue(mockEventType);
 
     const result = await eventTypeService.update(1, mockEventType);
 
     expect(result).toEqual(mockEventType);
-    expect(prisma.event_types.update).toHaveBeenCalledWith({
+    expect(prisma.eventType.update).toHaveBeenCalledWith({
       where: { id: 1 },
       data: mockEventType,
     });
@@ -110,12 +110,12 @@ describe("EventType Service", () => {
   it("should delete an event type", async () => {
     const mockEventType = { id: 1, name: "Conference" };
 
-    (prisma.event_types.delete as Mock).mockResolvedValue(mockEventType);
+    (prisma.eventType.delete as Mock).mockResolvedValue(mockEventType);
 
     const result = await eventTypeService.remove(1);
 
     expect(result).toEqual(mockEventType);
-    expect(prisma.event_types.delete).toHaveBeenCalledWith({
+    expect(prisma.eventType.delete).toHaveBeenCalledWith({
       where: { id: 1 },
     });
   });

@@ -150,10 +150,21 @@ router.put("/roles/:id", updateRole);
  *         schema:
  *           type: integer
  *     responses:
- *       204:
+ *       200:
  *         description: Role deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
  *       404:
  *         description: Role not found
+ *      500:
+ *         description: Server error
  */
 router.delete("/roles/:id", deleteRole);
 
