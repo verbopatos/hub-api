@@ -12,10 +12,13 @@ services:
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - ./db/postgres-data:/var/lib/postgresql/data
-      - ./db/scripts/hub.ddl.sql:/docker-entrypoint-initdb.d/01_hub-ddl.sql
-      - ./db/scripts/hub.dml.sql:/docker-entrypoint-initdb.d/02_hub-dml.sql
     networks:
       - hub-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   hub-api:
     build: .
@@ -26,12 +29,13 @@ services:
       DB_NAME: ${DB_NAME:-hub}
       DB_PASSWORD: ${DB_PASSWORD:-password}
       DB_PORT: ${DB_PORT:-5432}
-      DATABASE_URL: "postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-password}@${DB_HOST:-hub-db}:${DB_PORT:-5432}/${DB_NAME:-hub}"
+      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}"
       PORT: ${PORT:-3000}
     ports:
       - "3000:3000"
     depends_on:
-      - hub-db
+      hub-db:
+        condition: service_healthy
     networks:
       - hub-net
     env_file:

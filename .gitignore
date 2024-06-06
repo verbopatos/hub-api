@@ -142,3 +142,5 @@ postgres-data/
 # JetBrains
 .idea/
 *.iml
+
+.DS_Store

@@ -3,10 +3,10 @@ import prisma from "../prisma";
 import { Event } from "../models/event";
 
 export const create = (event: Event) => {
-  return prisma.events.create({
+  return prisma.event.create({
     data: {
       datetime: event.datetime,
-      event_types: {
+      eventType: {
         connect: { id: event.eventTypeId },
       },
     },
@@ -14,27 +14,27 @@ export const create = (event: Event) => {
 };
 
 export const getById = (id: number) => {
-  return prisma.events.findUnique({
+  return prisma.event.findUnique({
     where: { id },
-    include: { event_types: true },
+    include: { eventType: true },
   });
 };
 
 export const getMany = (filteredConditions: any[]) => {
-  return prisma.events.findMany({
+  return prisma.event.findMany({
     where: filteredConditions.length > 0 ? { AND: filteredConditions } : {},
     include: {
-      event_types: true, // Include related event type
+      eventType: true, // Include related event type
     },
   });
 };
 
 export const update = (id: number, event: Event) => {
-  return prisma.events.update({
+  return prisma.event.update({
     where: { id },
     data: {
       datetime: event.datetime,
-      event_types: {
+      eventType: {
         connect: { id: event.eventTypeId },
       },
     },
@@ -42,7 +42,7 @@ export const update = (id: number, event: Event) => {
 };
 
 export const remove = (id: number) => {
-  return prisma.events.delete({ where: { id } });
+  return prisma.event.delete({ where: { id } });
 };
 
 // Path: src/services/eventService.ts
