@@ -1,7 +1,13 @@
 // eventController.ts
-import { Request, Response } from 'express';
-import { Event } from '../models/event';
-import { create, getById, getMany, remove, update } from '../services/eventService';
+import { Request, Response } from "express";
+import { Event } from "../models/event";
+import {
+  create,
+  getById,
+  getMany,
+  remove,
+  update,
+} from "../services/eventService";
 
 /**
  * @swagger
@@ -111,7 +117,7 @@ export const getEventById = async (req: Request, res: Response) => {
     const result = await getById(Number(id));
 
     if (!result) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: "Event not found" });
     }
 
     res.status(200).json(result);
@@ -154,16 +160,21 @@ export const getEvents = async (req: Request, res: Response) => {
       event_types: {
         name: {
           contains: name as string,
-          mode: 'intensitive',
+          mode: "insensitive",
         },
       },
     });
   }
 
   if (date) {
+    const startDate = new Date(date as string);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
+
     conditions.push({
       datetime: {
-        equals: new Date(date as string),
+        gte: startDate,
+        lt: endDate,
       },
     });
   }
@@ -213,7 +224,7 @@ export const updateEvent = async (req: Request, res: Response) => {
     const existingEvent = await getById(Number(id));
 
     if (!existingEvent) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: "Event not found" });
     }
 
     const result = await update(Number(id), { eventTypeId, datetime });
@@ -251,7 +262,7 @@ export const deleteEvent = async (req: Request, res: Response) => {
     const existingEvent = await getById(Number(id));
 
     if (!existingEvent) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ message: "Event not found" });
     }
 
     const result = await remove(Number(id));
@@ -261,3 +272,5 @@ export const deleteEvent = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message });
   }
 };
+
+// Path: src/controllers/eventController.ts

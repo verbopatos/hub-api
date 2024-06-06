@@ -1,36 +1,36 @@
-// eventTypeController.ts
+// src/controllers/departmentController.ts
 import { Request, Response } from "express";
-import { EventType } from "../models/eventType";
 import {
   create,
   getById,
   getMany,
-  remove,
   update,
-} from "../services/eventTypeService";
+  remove,
+} from "../services/departmentService";
+import { Department } from "../models/department";
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     EventType:
+ *     Department:
  *       type: object
  *       required:
  *         - name
  *       properties:
  *         id:
  *           type: integer
- *           description: The auto-generated id of the event type
+ *           description: The auto-generated id of the department
  *         name:
  *           type: string
- *           description: The name of the event type
- *     CreateEventType:
+ *           description: The name of the department
+ *     CreateDepartment:
  *       type: object
  *       required: true
  *       properties:
  *         name:
  *           type: string
- *     UpdateEventType:
+ *     UpdateDepartment:
  *       type: object
  *       properties:
  *         name:
@@ -40,35 +40,33 @@ import {
 /**
  * @swagger
  * tags:
- *   - name: EventTypes
- *     description: Event type management
+ *   - name: Departments
+ *     description: Department management
  */
 
 /**
  * @swagger
- * /event-types:
+ * /departments:
  *   post:
- *     summary: Create a new event type
- *     tags: [EventTypes]
+ *     summary: Create a new department
+ *     tags: [Departments]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/CreateEventType'
+ *             $ref: '#/components/schemas/CreateDepartment'
  *     responses:
  *       201:
- *         description: Event type created successfully
+ *         description: Department created successfully
  *       500:
  *         description: Server error
  */
-export const createEventType = async (req: Request, res: Response) => {
-  const { name } = req.body as EventType;
+export const createDepartment = async (req: Request, res: Response) => {
+  const { name } = req.body as Department;
 
   try {
-    const result = await create({
-      name,
-    });
+    const result = await create({ name });
 
     res.status(201).json(result);
   } catch (error) {
@@ -78,10 +76,10 @@ export const createEventType = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /event-types/{id}:
+ * /departments/{id}:
  *   get:
- *     summary: Get an event type by ID
- *     tags: [EventTypes]
+ *     summary: Get a department by ID
+ *     tags: [Departments]
  *     parameters:
  *       - in: path
  *         name: id
@@ -90,20 +88,24 @@ export const createEventType = async (req: Request, res: Response) => {
  *         required: true
  *     responses:
  *       200:
- *         description: Event type details
+ *         description: Department details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Department'
  *       404:
- *         description: Event type not found
+ *         description: Department not found
  *       500:
  *         description: Server error
  */
-export const getEventTypeById = async (req: Request, res: Response) => {
+export const getDepartmentById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
     const result = await getById(Number(id));
 
     if (!result) {
-      return res.status(404).json({ message: "Event type not found" });
+      return res.status(404).json({ message: "Department not found" });
     }
 
     res.status(200).json(result);
@@ -114,39 +116,39 @@ export const getEventTypeById = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /event-types:
+ * /departments:
  *   get:
- *     summary: Get a list of event types
- *     tags: [EventTypes]
+ *     summary: Get a list of departments
+ *     tags: [Departments]
  *     parameters:
  *       - in: query
  *         name: name
  *         schema:
  *           type: string
- *         description: Name of the event type
+ *         required: false
  *     responses:
  *       200:
- *         description: A list of event types
+ *         description: A list of departments
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Department'
  *       500:
  *         description: Server error
  */
-export const getEventTypes = async (req: Request, res: Response) => {
+export const getDepartments = async (req: Request, res: Response) => {
   const { name } = req.query;
 
-  const conditions: any[] = [];
-
-  if (name) {
-    conditions.push({
-      name: {
-        contains: name as string,
-        mode: "insensitive",
-      },
-    });
-  }
-
-  const filteredConditions = conditions.filter(Boolean);
-
   try {
+    const filteredConditions = [];
+    if (name) {
+      filteredConditions.push({
+        name: { contains: name as string, mode: "insensitive" },
+      });
+    }
+
     const result = await getMany(filteredConditions);
 
     res.status(200).json(result);
@@ -157,10 +159,10 @@ export const getEventTypes = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /event-types/{id}:
+ * /departments/{id}:
  *   put:
- *     summary: Update an event type
- *     tags: [EventTypes]
+ *     summary: Update a department by ID
+ *     tags: [Departments]
  *     parameters:
  *       - in: path
  *         name: id
@@ -172,24 +174,24 @@ export const getEventTypes = async (req: Request, res: Response) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UpdateEventType'
+ *             $ref: '#/components/schemas/UpdateDepartment'
  *     responses:
  *       200:
- *         description: Event type updated successfully
+ *         description: Department updated successfully
  *       404:
- *         description: Event type not found
+ *         description: Department not found
  *       500:
  *         description: Server error
  */
-export const updateEventType = async (req: Request, res: Response) => {
+export const updateDepartment = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name } = req.body as EventType;
+  const { name } = req.body as Department;
 
   try {
-    const existingEvent = await getById(Number(id));
+    const existingDepartment = await getById(Number(id));
 
-    if (!existingEvent) {
-      return res.status(404).json({ message: "Event type not found" });
+    if (!existingDepartment) {
+      return res.status(404).json({ message: "Department not found" });
     }
 
     const result = await update(Number(id), { name });
@@ -202,10 +204,10 @@ export const updateEventType = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /event-types/{id}:
+ * /departments/{id}:
  *   delete:
- *     summary: Delete an event type
- *     tags: [EventTypes]
+ *     summary: Delete a department by ID
+ *     tags: [Departments]
  *     parameters:
  *       - in: path
  *         name: id
@@ -214,20 +216,20 @@ export const updateEventType = async (req: Request, res: Response) => {
  *         required: true
  *     responses:
  *       200:
- *         description: Event type deleted successfully
+ *         description: Department deleted successfully
  *       404:
- *         description: Event type not found
+ *         description: Department not found
  *       500:
  *         description: Server error
  */
-export const deleteEventType = async (req: Request, res: Response) => {
+export const deleteDepartment = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const existingEvent = await getById(Number(id));
+    const existingDepartment = await getById(Number(id));
 
-    if (!existingEvent) {
-      return res.status(404).json({ message: "Event type not found" });
+    if (!existingDepartment) {
+      return res.status(404).json({ message: "Department not found" });
     }
 
     const result = await remove(Number(id));
@@ -237,4 +239,3 @@ export const deleteEventType = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message });
   }
 };
-// Path: src/controllers/eventController.ts

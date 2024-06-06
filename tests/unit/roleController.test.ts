@@ -1,30 +1,30 @@
 import { describe, it, expect, vi, beforeEach, Mock } from "vitest";
 import { Request, Response } from "express";
 import {
-  createEventType,
-  getEventTypeById,
-  getEventTypes,
-  updateEventType,
-  deleteEventType,
-} from "../../src/controllers/eventTypeController";
-import * as eventTypeService from "../../src/services/eventTypeService";
+  createRole,
+  getRoleById,
+  getRoles,
+  updateRole,
+  deleteRole,
+} from "../../src/controllers/roleController";
+import * as roleService from "../../src/services/roleService";
 
-vi.mock("../../src/services/eventTypeService");
+vi.mock("../../src/services/roleService");
 
-describe("Event Type Controller", () => {
+describe("Role Controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("should create an event type", async () => {
-    const mockEventType = {
+  it("should create an role", async () => {
+    const mockRole = {
       id: 1,
-      name: "Test Event Type",
+      name: "Test Role",
     };
 
     const req = {
       body: {
-        name: mockEventType.name,
+        name: mockRole.name,
       },
     } as Request;
 
@@ -33,18 +33,18 @@ describe("Event Type Controller", () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    (eventTypeService.create as Mock).mockResolvedValue(mockEventType);
+    (roleService.create as Mock).mockResolvedValue(mockRole);
 
-    await createEventType(req, res);
+    await createRole(req, res);
 
     expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith(mockEventType);
+    expect(res.json).toHaveBeenCalledWith(mockRole);
   });
 
-  it("should handle errors when creating an event type", async () => {
+  it("should handle errors when creating an role", async () => {
     const req = {
       body: {
-        name: "Test Event Type",
+        name: "Test Role",
       },
     } as Request;
 
@@ -54,15 +54,15 @@ describe("Event Type Controller", () => {
     } as unknown as Response;
 
     const error = new Error("Database error");
-    (eventTypeService.create as Mock).mockRejectedValue(error);
+    (roleService.create as Mock).mockRejectedValue(error);
 
-    await createEventType(req, res);
+    await createRole(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: error.message });
   });
 
-  it("should get an event type by ID", async () => {
+  it("should get an role by ID", async () => {
     const req = {
       params: { id: "1" },
     } as unknown as Request;
@@ -72,20 +72,20 @@ describe("Event Type Controller", () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    const eventType = {
+    const role = {
       id: 1,
-      name: "Test Event Type",
+      name: "Test Role",
     };
 
-    (eventTypeService.getById as Mock).mockResolvedValue(eventType);
+    (roleService.getById as Mock).mockResolvedValue(role);
 
-    await getEventTypeById(req, res);
+    await getRoleById(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(eventType);
+    expect(res.json).toHaveBeenCalledWith(role);
   });
 
-  it("should return 404 if event type by ID is not found", async () => {
+  it("should return 404 if role by ID is not found", async () => {
     const req = {
       params: { id: "1" },
     } as unknown as Request;
@@ -95,15 +95,15 @@ describe("Event Type Controller", () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    (eventTypeService.getById as Mock).mockResolvedValue(null);
+    (roleService.getById as Mock).mockResolvedValue(null);
 
-    await getEventTypeById(req, res);
+    await getRoleById(req, res);
 
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: "Event type not found" });
+    expect(res.json).toHaveBeenCalledWith({ message: "Role not found" });
   });
 
-  it("should handle errors when getting an event type by ID", async () => {
+  it("should handle errors when getting an role by ID", async () => {
     const req = {
       params: { id: "1" },
     } as unknown as Request;
@@ -114,18 +114,18 @@ describe("Event Type Controller", () => {
     } as unknown as Response;
 
     const error = new Error("Database error");
-    (eventTypeService.getById as Mock).mockRejectedValue(error);
+    (roleService.getById as Mock).mockRejectedValue(error);
 
-    await getEventTypeById(req, res);
+    await getRoleById(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: error.message });
   });
 
-  it("should get a list of event types", async () => {
+  it("should get a list of roles", async () => {
     const req = {
       query: {
-        name: "Event",
+        name: "Role",
       },
     } as unknown as Request;
 
@@ -134,23 +134,23 @@ describe("Event Type Controller", () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    const eventTypes = [
-      { id: 1, name: "Event Type 1" },
-      { id: 2, name: "Event Type 2" },
+    const roles = [
+      { id: 1, name: "Role 1" },
+      { id: 2, name: "Role 2" },
     ];
 
-    (eventTypeService.getMany as Mock).mockResolvedValue(eventTypes);
+    (roleService.getMany as Mock).mockResolvedValue(roles);
 
-    await getEventTypes(req, res);
+    await getRoles(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(eventTypes);
+    expect(res.json).toHaveBeenCalledWith(roles);
   });
 
-  it("should handle errors when getting a list of event types", async () => {
+  it("should handle errors when getting a list of roles", async () => {
     const req = {
       query: {
-        name: "Test Event Type",
+        name: "Test Role",
       },
     } as unknown as Request;
     const res = {
@@ -159,19 +159,19 @@ describe("Event Type Controller", () => {
     } as unknown as Response;
 
     const error = new Error("Database error");
-    (eventTypeService.getMany as Mock).mockRejectedValue(error);
+    (roleService.getMany as Mock).mockRejectedValue(error);
 
-    await getEventTypes(req, res);
+    await getRoles(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: error.message });
   });
 
-  it("should update an event type", async () => {
+  it("should update an role", async () => {
     const req = {
       params: { id: "1" },
       body: {
-        name: "Updated Event Type",
+        name: "Updated Role",
       },
     } as unknown as Request;
 
@@ -180,25 +180,25 @@ describe("Event Type Controller", () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    const updatedEventType = {
+    const updatedRole = {
       id: 1,
-      name: "Updated Event Type",
+      name: "Updated Role",
     };
 
-    (eventTypeService.getById as Mock).mockResolvedValueOnce({ id: "1" });
-    (eventTypeService.update as Mock).mockResolvedValueOnce(updatedEventType);
+    (roleService.getById as Mock).mockResolvedValueOnce({ id: "1" });
+    (roleService.update as Mock).mockResolvedValueOnce(updatedRole);
 
-    await updateEventType(req, res);
+    await updateRole(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(updatedEventType);
+    expect(res.json).toHaveBeenCalledWith(updatedRole);
   });
 
-  it("should return 404 if event type to update is not found", async () => {
+  it("should return 404 if role to update is not found", async () => {
     const req = {
       params: { id: "999" },
       body: {
-        name: "Updated Event Type",
+        name: "Updated Role",
       },
     } as unknown as Request;
 
@@ -207,19 +207,19 @@ describe("Event Type Controller", () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    (eventTypeService.getById as Mock).mockResolvedValueOnce(null);
+    (roleService.getById as Mock).mockResolvedValueOnce(null);
 
-    await updateEventType(req, res);
+    await updateRole(req, res);
 
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: "Event type not found" });
+    expect(res.json).toHaveBeenCalledWith({ message: "Role not found" });
   });
 
-  it("should handle errors when updating an event type", async () => {
+  it("should handle errors when updating an role", async () => {
     const req = {
       params: { id: "1" },
       body: {
-        name: "Updated Event Type",
+        name: "Updated Role",
       },
     } as unknown as Request;
     const res = {
@@ -228,15 +228,15 @@ describe("Event Type Controller", () => {
     } as unknown as Response;
 
     const error = new Error("Database error");
-    (eventTypeService.update as Mock).mockRejectedValue(error);
+    (roleService.update as Mock).mockRejectedValue(error);
 
-    await updateEventType(req, res);
+    await updateRole(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: error.message });
   });
 
-  it("should delete an event type", async () => {
+  it("should delete an role", async () => {
     const req = {
       params: { id: "1" },
     } as unknown as Request;
@@ -246,21 +246,21 @@ describe("Event Type Controller", () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    const deletedEventType = {
+    const deletedRole = {
       id: 1,
-      name: "Deleted Event Type",
+      name: "Deleted Role",
     };
 
-    (eventTypeService.getById as Mock).mockResolvedValueOnce({ id: 1 });
-    (eventTypeService.remove as Mock).mockResolvedValue(deletedEventType);
+    (roleService.getById as Mock).mockResolvedValueOnce({ id: 1 });
+    (roleService.remove as Mock).mockResolvedValue(deletedRole);
 
-    await deleteEventType(req, res);
+    await deleteRole(req, res);
 
     expect(res.status).toHaveBeenCalledWith(200);
-    expect(res.json).toHaveBeenCalledWith(deletedEventType);
+    expect(res.json).toHaveBeenCalledWith(deletedRole);
   });
 
-  it("should return 404 if event type to delete is not found", async () => {
+  it("should return 404 if role to delete is not found", async () => {
     const req = {
       params: { id: "999" },
     } as unknown as Request;
@@ -270,15 +270,15 @@ describe("Event Type Controller", () => {
       json: vi.fn(),
     } as unknown as Response;
 
-    (eventTypeService.getById as Mock).mockResolvedValueOnce(null);
+    (roleService.getById as Mock).mockResolvedValueOnce(null);
 
-    await deleteEventType(req, res);
+    await deleteRole(req, res);
 
     expect(res.status).toHaveBeenCalledWith(404);
-    expect(res.json).toHaveBeenCalledWith({ message: "Event type not found" });
+    expect(res.json).toHaveBeenCalledWith({ message: "Role not found" });
   });
 
-  it("should handle errors when deleting an event type", async () => {
+  it("should handle errors when deleting an role", async () => {
     const req = {
       params: { id: "1" },
     } as unknown as Request;
@@ -289,9 +289,9 @@ describe("Event Type Controller", () => {
     } as unknown as Response;
 
     const error = new Error("Database error");
-    (eventTypeService.remove as Mock).mockRejectedValue(error);
+    (roleService.remove as Mock).mockRejectedValue(error);
 
-    await deleteEventType(req, res);
+    await deleteRole(req, res);
 
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ error: error.message });

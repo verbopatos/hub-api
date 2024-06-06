@@ -52,7 +52,7 @@ jobs:
 
           if [ "$ENV_EXISTS" == "$EB_ENV_NAME" ]; then
             eb init -p "Docker running on 64bit Amazon Linux 2023" $EB_APP_NAME --region $AWS_REGION
-          
+
             echo "Environment $EB_ENV_NAME exists. Deleting..."
             eb terminate $EB_ENV_NAME --force
 

@@ -1,6 +1,12 @@
 //eventRoutes.ts
-import { Router } from 'express';
-import { createEvent, getEventById, getEvents, updateEvent, deleteEvent } from '../controllers/eventController';
+import { Router } from "express";
+import {
+  createEvent,
+  getEventById,
+  getEvents,
+  updateEvent,
+  deleteEvent,
+} from "../controllers/eventController";
 
 const router = Router();
 
@@ -21,7 +27,7 @@ const router = Router();
  *       500:
  *         description: Server error
  */
-router.post('/events', createEvent);
+router.post("/events", createEvent);
 
 /**
  * @swagger
@@ -42,7 +48,7 @@ router.post('/events', createEvent);
  *       500:
  *         description: Server error
  */
-router.get('/events/:id', getEventById);
+router.get("/events/:id", getEventById);
 
 /**
  * @swagger
@@ -55,7 +61,7 @@ router.get('/events/:id', getEventById);
  *       500:
  *         description: Server error
  */
-router.get('/events', getEvents);
+router.get("/events", getEvents);
 
 /**
  * @swagger
@@ -82,7 +88,7 @@ router.get('/events', getEvents);
  *       500:
  *         description: Server error
  */
-router.put('/events/:id', updateEvent);
+router.put("/events/:id", updateEvent);
 
 /**
  * @swagger
@@ -103,6 +109,8 @@ router.put('/events/:id', updateEvent);
  *       500:
  *         description: Server error
  */
-router.delete('/events/:id', deleteEvent);
+router.delete("/events/:id", deleteEvent);
 
 export default router;
+
+// Path: src/routes/eventRoutes.ts

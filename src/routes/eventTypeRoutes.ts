@@ -1,6 +1,12 @@
 //eventTypeRoutes.ts
-import { Router } from 'express';
-import { createEventType, getEventTypeById, getEventTypes, updateEventType, deleteEventType } from '../controllers/eventTypeController';
+import { Router } from "express";
+import {
+  createEventType,
+  getEventTypeById,
+  getEventTypes,
+  updateEventType,
+  deleteEventType,
+} from "../controllers/eventTypeController";
 
 const router = Router();
 
@@ -21,7 +27,7 @@ const router = Router();
  *       500:
  *         description: Server error
  */
-router.post('/event-types', createEventType);
+router.post("/event-types", createEventType);
 
 /**
  * @swagger
@@ -42,7 +48,7 @@ router.post('/event-types', createEventType);
  *       500:
  *         description: Server error
  */
-router.get('/event-types/:id', getEventTypeById);
+router.get("/event-types/:id", getEventTypeById);
 
 /**
  * @swagger
@@ -55,7 +61,7 @@ router.get('/event-types/:id', getEventTypeById);
  *       500:
  *         description: Server error
  */
-router.get('/event-types', getEventTypes);
+router.get("/event-types", getEventTypes);
 
 /**
  * @swagger
@@ -82,7 +88,7 @@ router.get('/event-types', getEventTypes);
  *       500:
  *         description: Server error
  */
-router.put('/event-types/:id', updateEventType);
+router.put("/event-types/:id", updateEventType);
 
 /**
  * @swagger
@@ -103,6 +109,6 @@ router.put('/event-types/:id', updateEventType);
  *       500:
  *         description: Server error
  */
-router.delete('/event-types/:id', deleteEventType);
+router.delete("/event-types/:id", deleteEventType);
 
 export default router;

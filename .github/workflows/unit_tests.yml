@@ -3,9 +3,9 @@ name: Run Unit Tests
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, develop]
   push:
-    branches: [main]
+    branches: [main, develop]
 
 jobs:
   test:
@@ -13,19 +13,19 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]  # Specify the versions of Node.js you want to test against
+        node-version: [18.x] # Specify the versions of Node.js you want to test against
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: ${{ matrix.node-version }}
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Run tests
-      run: npx vitest run --coverage
+      - name: Run tests
+        run: npx vitest run --coverage

@@ -1,36 +1,36 @@
-// eventTypeController.ts
+// src/controllers/roleController.ts
 import { Request, Response } from "express";
-import { EventType } from "../models/eventType";
 import {
   create,
   getById,
   getMany,
-  remove,
   update,
-} from "../services/eventTypeService";
+  remove,
+} from "../services/roleService";
+import { Role } from "../models/role";
 
 /**
  * @swagger
  * components:
  *   schemas:
- *     EventType:
+ *     Role:
  *       type: object
  *       required:
  *         - name
  *       properties:
  *         id:
  *           type: integer
- *           description: The auto-generated id of the event type
+ *           description: The auto-generated id of the role
  *         name:
  *           type: string
- *           description: The name of the event type
- *     CreateEventType:
+ *           description: The name of the role
+ *     CreateRole:
  *       type: object
  *       required: true
  *       properties:
  *         name:
  *           type: string
- *     UpdateEventType:
+ *     UpdateRole:
  *       type: object
  *       properties:
  *         name:
@@ -40,35 +40,33 @@ import {
 /**
  * @swagger
  * tags:
- *   - name: EventTypes
- *     description: Event type management
+ *   - name: Roles
+ *     description: Role management
  */
 
 /**
  * @swagger
- * /event-types:
+ * /roles:
  *   post:
- *     summary: Create a new event type
- *     tags: [EventTypes]
+ *     summary: Create a new role
+ *     tags: [Roles]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/CreateEventType'
+ *             $ref: '#/components/schemas/CreateRole'
  *     responses:
  *       201:
- *         description: Event type created successfully
+ *         description: Role created successfully
  *       500:
  *         description: Server error
  */
-export const createEventType = async (req: Request, res: Response) => {
-  const { name } = req.body as EventType;
+export const createRole = async (req: Request, res: Response) => {
+  const { name } = req.body as Role;
 
   try {
-    const result = await create({
-      name,
-    });
+    const result = await create({ name });
 
     res.status(201).json(result);
   } catch (error) {
@@ -78,10 +76,10 @@ export const createEventType = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /event-types/{id}:
+ * /roles/{id}:
  *   get:
- *     summary: Get an event type by ID
- *     tags: [EventTypes]
+ *     summary: Get a role by ID
+ *     tags: [Roles]
  *     parameters:
  *       - in: path
  *         name: id
@@ -90,20 +88,24 @@ export const createEventType = async (req: Request, res: Response) => {
  *         required: true
  *     responses:
  *       200:
- *         description: Event type details
+ *         description: Role details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Role'
  *       404:
- *         description: Event type not found
+ *         description: Role not found
  *       500:
  *         description: Server error
  */
-export const getEventTypeById = async (req: Request, res: Response) => {
+export const getRoleById = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
     const result = await getById(Number(id));
 
     if (!result) {
-      return res.status(404).json({ message: "Event type not found" });
+      return res.status(404).json({ message: "Role not found" });
     }
 
     res.status(200).json(result);
@@ -114,39 +116,39 @@ export const getEventTypeById = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /event-types:
+ * /roles:
  *   get:
- *     summary: Get a list of event types
- *     tags: [EventTypes]
+ *     summary: Get a list of roles
+ *     tags: [Roles]
  *     parameters:
  *       - in: query
  *         name: name
  *         schema:
  *           type: string
- *         description: Name of the event type
+ *         required: false
  *     responses:
  *       200:
- *         description: A list of event types
+ *         description: A list of roles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Role'
  *       500:
  *         description: Server error
  */
-export const getEventTypes = async (req: Request, res: Response) => {
+export const getRoles = async (req: Request, res: Response) => {
   const { name } = req.query;
 
-  const conditions: any[] = [];
-
-  if (name) {
-    conditions.push({
-      name: {
-        contains: name as string,
-        mode: "insensitive",
-      },
-    });
-  }
-
-  const filteredConditions = conditions.filter(Boolean);
-
   try {
+    const filteredConditions = [];
+    if (name) {
+      filteredConditions.push({
+        name: { contains: name as string, mode: "insensitive" },
+      });
+    }
+
     const result = await getMany(filteredConditions);
 
     res.status(200).json(result);
@@ -157,10 +159,10 @@ export const getEventTypes = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /event-types/{id}:
+ * /roles/{id}:
  *   put:
- *     summary: Update an event type
- *     tags: [EventTypes]
+ *     summary: Update a role by ID
+ *     tags: [Roles]
  *     parameters:
  *       - in: path
  *         name: id
@@ -172,24 +174,24 @@ export const getEventTypes = async (req: Request, res: Response) => {
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/UpdateEventType'
+ *             $ref: '#/components/schemas/UpdateRole'
  *     responses:
  *       200:
- *         description: Event type updated successfully
+ *         description: Role updated successfully
  *       404:
- *         description: Event type not found
+ *         description: Role not found
  *       500:
  *         description: Server error
  */
-export const updateEventType = async (req: Request, res: Response) => {
+export const updateRole = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { name } = req.body as EventType;
+  const { name } = req.body as Role;
 
   try {
-    const existingEvent = await getById(Number(id));
+    const existingRole = await getById(Number(id));
 
-    if (!existingEvent) {
-      return res.status(404).json({ message: "Event type not found" });
+    if (!existingRole) {
+      return res.status(404).json({ message: "Role not found" });
     }
 
     const result = await update(Number(id), { name });
@@ -202,10 +204,10 @@ export const updateEventType = async (req: Request, res: Response) => {
 
 /**
  * @swagger
- * /event-types/{id}:
+ * /roles/{id}:
  *   delete:
- *     summary: Delete an event type
- *     tags: [EventTypes]
+ *     summary: Delete a role by ID
+ *     tags: [Roles]
  *     parameters:
  *       - in: path
  *         name: id
@@ -214,20 +216,20 @@ export const updateEventType = async (req: Request, res: Response) => {
  *         required: true
  *     responses:
  *       200:
- *         description: Event type deleted successfully
+ *         description: Role deleted successfully
  *       404:
- *         description: Event type not found
+ *         description: Role not found
  *       500:
  *         description: Server error
  */
-export const deleteEventType = async (req: Request, res: Response) => {
+export const deleteRole = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const existingEvent = await getById(Number(id));
+    const existingRole = await getById(Number(id));
 
-    if (!existingEvent) {
-      return res.status(404).json({ message: "Event type not found" });
+    if (!existingRole) {
+      return res.status(404).json({ message: "Role not found" });
     }
 
     const result = await remove(Number(id));
@@ -237,4 +239,3 @@ export const deleteEventType = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message });
   }
 };
-// Path: src/controllers/eventController.ts

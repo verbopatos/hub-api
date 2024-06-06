@@ -8,17 +8,31 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model event_types {
+model EventType {
   id     Int      @id @default(autoincrement())
   name   String   @unique @db.VarChar(255)
-  events events[]
+  events Event[]
+  @@map("EventTypes")
 }
 
-model events {
+model Event {
   id            Int          @id @default(autoincrement())
-  event_type_id Int?
+  eventTypeId   Int?
   datetime      DateTime     @db.Timestamp(6)
-  event_types   event_types? @relation(fields: [event_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  eventType     EventType?   @relation(fields: [eventTypeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  @@map("Events")
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  @@map("Roles")
+}
+
+model Department {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  @@map("Departments")
 }
 
 model members {
