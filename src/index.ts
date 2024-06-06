@@ -7,6 +7,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import eventRoutes from "./routes/eventRoutes";
 import eventTypeRoutes from "./routes/eventTypeRoutes";
+import roleRoutes from "./routes/roleRoutes";
 import setupSwagger from "./swagger";
 
 dotenv.config();
@@ -22,6 +23,7 @@ app.use(express.json());
 // Route setup
 app.use("/api", eventRoutes);
 app.use("/api", eventTypeRoutes);
+app.use("/api", roleRoutes);
 
 // Setup Swagger
 setupSwagger(app);
