@@ -1,31 +1,31 @@
-// src/routes/roleRoutes.ts
+// src/routes/departmentRoutes.ts
 import { Router } from "express";
 import {
-  createRole,
-  getRoleById,
-  getRoles,
-  updateRole,
-  deleteRole,
-} from "../controllers/roleController";
+  createDepartment,
+  getDepartmentById,
+  getDepartments,
+  updateDepartment,
+  deleteDepartment,
+} from "../controllers/departmentController";
 
 const router = Router();
 
 /**
  * @swagger
  * tags:
- *   name: Roles
- *   description: API for managing roles
+ *   name: Departments
+ *   description: API for managing departments
  */
 
 /**
  * @swagger
- * /roles:
+ * /departments:
  *   get:
- *     summary: Get all roles
- *     tags: [Roles]
+ *     summary: Get all departments
+ *     tags: [Departments]
  *     responses:
  *       200:
- *         description: List of all roles
+ *         description: List of all departments
  *         content:
  *           application/json:
  *             schema:
@@ -38,14 +38,14 @@ const router = Router();
  *                   name:
  *                     type: string
  */
-router.get("/roles", getRoles);
+router.get("/departments", getDepartments);
 
 /**
  * @swagger
- * /roles/{id}:
+ * /departments/{id}:
  *   get:
- *     summary: Get a role by ID
- *     tags: [Roles]
+ *     summary: Get a department by ID
+ *     tags: [Departments]
  *     parameters:
  *       - in: path
  *         name: id
@@ -54,7 +54,7 @@ router.get("/roles", getRoles);
  *           type: integer
  *     responses:
  *       200:
- *         description: Role details
+ *         description: Department details
  *         content:
  *           application/json:
  *             schema:
@@ -65,16 +65,16 @@ router.get("/roles", getRoles);
  *                 name:
  *                   type: string
  *       404:
- *         description: Role not found
+ *         description: Department not found
  */
-router.get("/roles/:id", getRoleById);
+router.get("/departments/:id", getDepartmentById);
 
 /**
  * @swagger
- * /roles:
+ * /departments:
  *   post:
- *     summary: Create a new role
- *     tags: [Roles]
+ *     summary: Create a new department
+ *     tags: [Departments]
  *     requestBody:
  *       required: true
  *       content:
@@ -86,7 +86,7 @@ router.get("/roles/:id", getRoleById);
  *                 type: string
  *     responses:
  *       201:
- *         description: Role created
+ *         description: Department created
  *         content:
  *           application/json:
  *             schema:
@@ -97,14 +97,14 @@ router.get("/roles/:id", getRoleById);
  *                 name:
  *                   type: string
  */
-router.post("/roles", createRole);
+router.post("/departments", createDepartment);
 
 /**
  * @swagger
- * /roles/{id}:
+ * /departments/{id}:
  *   put:
- *     summary: Update a role by ID
- *     tags: [Roles]
+ *     summary: Update a department by ID
+ *     tags: [Departments]
  *     parameters:
  *       - in: path
  *         name: id
@@ -122,7 +122,7 @@ router.post("/roles", createRole);
  *                 type: string
  *     responses:
  *       200:
- *         description: Role updated
+ *         description: Department updated
  *         content:
  *           application/json:
  *             schema:
@@ -133,16 +133,16 @@ router.post("/roles", createRole);
  *                 name:
  *                   type: string
  *       404:
- *         description: Role not found
+ *         description: Department not found
  */
-router.put("/roles/:id", updateRole);
+router.put("/departments/:id", updateDepartment);
 
 /**
  * @swagger
- * /roles/{id}:
+ * /departments/{id}:
  *   delete:
- *     summary: Delete a role by ID
- *     tags: [Roles]
+ *     summary: Delete a department by ID
+ *     tags: [Departments]
  *     parameters:
  *       - in: path
  *         name: id
@@ -151,7 +151,7 @@ router.put("/roles/:id", updateRole);
  *           type: integer
  *     responses:
  *       200:
- *         description: Role deleted
+ *         description: Department deleted
  *         content:
  *           application/json:
  *             schema:
@@ -162,10 +162,10 @@ router.put("/roles/:id", updateRole);
  *                 name:
  *                   type: string
  *       404:
- *         description: Role not found
+ *         description: Department not found
  *       500:
  *         description: Server error
  */
-router.delete("/roles/:id", deleteRole);
+router.delete("/departments/:id", deleteDepartment);
 
 export default router;

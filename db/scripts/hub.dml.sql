@@ -4,6 +4,9 @@ DECLARE
   v_end_date DATE := v_start_date + INTERVAL '70 days';
   d RECORD;
 BEGIN 
+  -- Insert departments
+  INSERT INTO "Departments" (name) VALUES ('Administração'), ('Comunicação'), ('Evangelismo'), ('Louvor'), ('Mídia'), ('Diaconato'), ('Diretoria'), ('Som'), ('Tecnologia da Informação');
+
   -- Insert roles
   INSERT INTO "Roles" (name) VALUES ('Admin'), ('Líder'), ('Membro');
 
