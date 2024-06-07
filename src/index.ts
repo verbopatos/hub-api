@@ -12,6 +12,7 @@ import departmentRoutes from "./routes/departmentRoutes";
 import eventRoutes from "./routes/eventRoutes";
 import eventTypeRoutes from "./routes/eventTypeRoutes";
 import roleRoutes from "./routes/roleRoutes";
+import memberRoutes from "./routes/memberRoutes";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.use("/api", eventRoutes);
 app.use("/api", eventTypeRoutes);
 app.use("/api", roleRoutes);
 app.use("/api", departmentRoutes);
+app.use("/api", memberRoutes);
 
 // Setup Swagger
 setupSwagger(app);
