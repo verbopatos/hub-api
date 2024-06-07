@@ -20,7 +20,9 @@ export const createMember = async (req: Request, res: Response) => {
     }
 
     const passwordSalt = process.env.SALT;
-    const hashedPassword = await argon2.hash(password, { salt: passwordSalt }); // use salt option for more security
+    const hashedPassword = await argon2.hash(password, {
+      salt: Buffer.from(String(passwordSalt)),
+    }); // use salt option for more security
 
     const result = await create({
       email,
@@ -31,6 +33,7 @@ export const createMember = async (req: Request, res: Response) => {
 
     res.status(201).json(result);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: (error as Error).message });
   }
 };
