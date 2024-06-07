@@ -1,23 +1,48 @@
 //memberService.ts
-import prisma from '../prisma';
-import { Prisma } from '@prisma/client';
+import prisma from "../prisma";
+import { Member } from "../models/member";
 
-export const create = (member: Prisma.membersCreateInput) => {
-  return prisma.members.create({ data: member });
+export const create = (member: Member) => {
+  return prisma.member.create({
+    data: {
+      email: member.email,
+      password: member.password,
+      department: {
+        connect: { id: member.departmentId },
+      },
+      role: {
+        connect: { id: member.roleId },
+      },
+    },
+  });
 };
 
 export const getById = (id: number) => {
-  return prisma.members.findUnique({ where: { id } });
+  return prisma.member.findUnique({ where: { id } });
 };
 
 export const getByEmail = (email: string) => {
-  return prisma.members.findUnique({ where: { email } });
+  return prisma.member.findUnique({ where: { email } });
 };
 
-export const update = (id: number, member: Prisma.membersUpdateInput) => {
-  return prisma.members.update({ where: { id }, data: member });
+export const update = (id: number, member: Member) => {
+  return prisma.member.update({
+    where: { id },
+    data: {
+      email: member.email,
+      password: member.password,
+      department: {
+        connect: { id: member.departmentId },
+      },
+      role: {
+        connect: { id: member.roleId },
+      },
+    },
+  });
 };
 
 export const remove = (id: number) => {
-  return prisma.members.delete({ where: { id } });
+  return prisma.member.delete({ where: { id } });
 };
+
+// Path: src/services/memverService.ts
