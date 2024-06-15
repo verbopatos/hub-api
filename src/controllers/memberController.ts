@@ -8,7 +8,19 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const createMember = async (req: Request, res: Response) => {
-  const { email, password, departmentId, roleId } = req.body as Member;
+  const {
+    email,
+    password,
+    name,
+    cpf,
+    street,
+    neighborhood,
+    city,
+    state,
+    zipCode,
+    departmentId,
+    roleId,
+  } = req.body as Member;
 
   try {
     const existingUser = await getByEmail(email);
@@ -27,6 +39,13 @@ export const createMember = async (req: Request, res: Response) => {
     const result = await create({
       email,
       password: hashedPassword,
+      name,
+      cpf,
+      street,
+      neighborhood,
+      city,
+      state,
+      zipCode,
       departmentId,
       roleId,
     });
@@ -37,3 +56,7 @@ export const createMember = async (req: Request, res: Response) => {
     res.status(500).json({ error: (error as Error).message });
   }
 };
+
+// export const getMembetById = (req: Request, res: Response) => {
+//   const { id } = req.params;
+// };

@@ -47,11 +47,11 @@ model Member {
   password     String
   name         String
   cpf          String
-  street       String
-  neighborhood String
-  city         String
-  state        String
-  zipCode      String
+  street       String?
+  neighborhood String?
+  city         String?
+  state        String?
+  zipCode      String?
   department   Department @relation(fields: [departmentId], references: [id])
   departmentId Int
   role         Role       @relation(fields: [roleId], references: [id])

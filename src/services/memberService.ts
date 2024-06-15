@@ -7,6 +7,13 @@ export const create = (member: Member) => {
     data: {
       email: member.email,
       password: member.password,
+      name: member.name,
+      cpf: member.cpf,
+      street: member.street,
+      neighborhood: member.neighborhood,
+      city: member.city,
+      state: member.state,
+      zipCode: member.zipCode,
       department: {
         connect: { id: member.departmentId },
       },
