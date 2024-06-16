@@ -6,6 +6,7 @@ import {
   getByEmail,
   getById,
   getMany,
+  update,
 } from "../services/memberService";
 import argon2 from "argon2";
 import dotenv from "dotenv";
@@ -99,6 +100,49 @@ export const getMembers = async (req: Request, res: Response) => {
 
   try {
     const result = await getMany(filteredConditions);
+
+    res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({ error: (error as Error).message });
+  }
+};
+
+export const updateMember = async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const {
+    email,
+    password,
+    name,
+    cpf,
+    street,
+    neighborhood,
+    city,
+    state,
+    zipCode,
+    departmentId,
+    roleId,
+  } = req.body as Member;
+
+  try {
+    const existingMember = await getById(Number(id));
+
+    if (!existingMember) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    const result = await update(Number(id), {
+      email,
+      password,
+      name,
+      cpf,
+      street,
+      neighborhood,
+      city,
+      state,
+      zipCode,
+      departmentId,
+      roleId,
+    });
 
     res.status(200).json(result);
   } catch (error) {
