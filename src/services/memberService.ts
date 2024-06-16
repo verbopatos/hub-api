@@ -1,6 +1,7 @@
 //memberService.ts
 import prisma from "../prisma";
 import { Member } from "../models/member";
+import { Prisma } from "@prisma/client";
 
 export const create = (member: Member) => {
   return prisma.member.create({
@@ -30,6 +31,12 @@ export const getById = (id: number) => {
 
 export const getByEmail = (email: string) => {
   return prisma.member.findUnique({ where: { email } });
+};
+
+export const getMany = (filteredConditions: Prisma.MemberWhereInput[]) => {
+  return prisma.member.findMany({
+    where: filteredConditions.length > 0 ? { AND: filteredConditions } : {},
+  });
 };
 
 export const update = (id: number, member: Member) => {

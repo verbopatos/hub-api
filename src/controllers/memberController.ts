@@ -1,9 +1,15 @@
 // memberController.ts
 import { Request, Response } from "express";
 import { Member } from "../models/member";
-import { create, getByEmail, getById } from "../services/memberService";
+import {
+  create,
+  getByEmail,
+  getById,
+  getMany,
+} from "../services/memberService";
 import argon2 from "argon2";
 import dotenv from "dotenv";
+import { Prisma } from "@prisma/client";
 
 dotenv.config();
 
@@ -68,6 +74,31 @@ export const getMembetById = async (req: Request, res: Response) => {
         message: "Member not found",
       });
     }
+
+    res.status(200).json(result);
+  } catch (error) {
+    return res.status(500).json({ error: (error as Error).message });
+  }
+};
+
+export const getMembers = async (req: Request, res: Response) => {
+  const { name } = req.params;
+
+  const conditions: Prisma.MemberWhereInput[] = [];
+
+  if (name) {
+    conditions.push({
+      name: {
+        contains: name,
+        mode: "insensitive",
+      },
+    });
+  }
+
+  const filteredConditions = conditions.filter(Boolean);
+
+  try {
+    const result = await getMany(filteredConditions);
 
     res.status(200).json(result);
   } catch (error) {
