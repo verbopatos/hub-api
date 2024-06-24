@@ -9,28 +9,53 @@ datasource db {
 }
 
 model EventType {
-  id     Int      @id @default(autoincrement())
-  name   String   @unique @db.VarChar(255)
+  id     Int     @id @default(autoincrement())
+  name   String  @unique @db.VarChar(255)
   events Event[]
+
   @@map("EventTypes")
 }
 
 model Event {
-  id            Int          @id @default(autoincrement())
-  eventTypeId   Int?
-  datetime      DateTime     @db.Timestamp(6)
-  eventType     EventType?   @relation(fields: [eventTypeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id          Int        @id @default(autoincrement())
+  eventTypeId Int?
+  datetime    DateTime   @db.Timestamp(6)
+  eventType   EventType? @relation(fields: [eventTypeId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
   @@map("Events")
 }
 
 model Role {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
+  id     Int      @id @default(autoincrement())
+  name   String   @unique
+  Member Member[]
+
   @@map("Roles")
 }
 
 model Department {
-  id    Int    @id @default(autoincrement())
-  name  String @unique
+  id     Int      @id @default(autoincrement())
+  name   String   @unique
+  Member Member[]
+
   @@map("Departments")
+}
+
+model Member {
+  id           Int        @id @default(autoincrement())
+  email        String     @unique @db.VarChar(255)
+  password     String
+  name         String
+  cpf          String
+  street       String?
+  neighborhood String?
+  city         String?
+  state        String?
+  zipCode      String?
+  department   Department @relation(fields: [departmentId], references: [id])
+  departmentId Int
+  role         Role       @relation(fields: [roleId], references: [id])
+  roleId       Int
+
+  @@map("Members")
 }
